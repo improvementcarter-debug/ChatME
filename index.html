@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatME! - Login & Register</title>
+    <title>ChatME! - Secure Verified Chat</title>
     <!-- Include Supabase JS SDK via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -62,8 +62,8 @@
         .switch-text a:hover { text-decoration: underline; }
         .hidden { display: none !important; }
         
-        /* Chat Screen Styles */
-        #chat-screen { width: 450px; height: 550px; display: flex; flex-direction: column; text-align: left; }
+        /* Chat Screen Container */
+        #chat-screen { width: 480px; height: 550px; display: flex; flex-direction: column; text-align: left; }
         .chat-messages { flex: 1; border: 1px solid #374151; border-radius: 8px; padding: 12px; overflow-y: auto; margin-bottom: 12px; background: #13151f; }
     </style>
 </head>
@@ -86,7 +86,7 @@
         <button class="primary-btn" onclick="handleSignIn()">Sign In</button>
         
         <div class="switch-text">
-            Don't have an account? <a onclick="switchScreen('register')">Register Here</a>
+            Don't have an account? <a onclick="switchView('register')">Register Here</a>
         </div>
     </div>
 
@@ -107,30 +107,30 @@
         <button class="primary-btn" onclick="handleRegister()">Sign Up</button>
         
         <div class="switch-text">
-            Already have an account? <a onclick="switchScreen('login')">Sign In Here</a>
+            Already have an account? <a onclick="switchView('login')">Sign In Here</a>
         </div>
     </div>
 
-    <!-- 3. VERIFICATION WALL SCREEN (Blocked until email link is clicked) -->
+    <!-- 3. VERIFICATION WALL SCREEN -->
     <div id="verification-wall" class="card hidden">
         <h2>Check Your Email ✉️</h2>
-        <p class="subtitle">We've sent a verification link to <b id="verify-email-target" style="color:white;"></b>.</p>
+        <p class="subtitle">Verification sent to <b id="verify-email-target" style="color:white;"></b>.</p>
         <p style="font-size: 13px; color: #9ca3af; line-height: 1.4; margin-bottom: 20px;">
-            You must click the activation link inside your real inbox before you can chat or access features.
+            You must click the confirmation link inside your email inbox before accessing chats and app features.
         </p>
         <button class="primary-btn" onclick="checkVerificationStatus()">I've Verified, Let Me In</button>
-        <button class="primary-btn" onclick="resendEmail()" style="background: #374151; margin-top: 8px;">Resend Verification Link</button>
-        <button class="primary-btn" onclick="logout()" style="background: #ef4444; margin-top: 8px;">Back to Login</button>
+        <button class="primary-btn" onclick="resendEmail()" style="background: #374151; margin-top: 8px;">Resend Link</button>
+        <button class="primary-btn" onclick="logout()" style="background: #ef4444; margin-top: 8px;">Logout / Back</button>
     </div>
 
-    <!-- 4. CHAT SCREEN (Only accessible for verified users) -->
-    <div id="chat-screen" class="card hidden" style="width: 500px;">
+    <!-- 4. CHAT SCREEN (Verified Users Only) -->
+    <div id="chat-screen" class="card hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #374151; padding-bottom: 10px; margin-bottom: 10px;">
             <h3 style="margin:0; color:#ec4899;">ChatME! Room</h3>
             <button onclick="logout()" style="width: auto; background: #ef4444; border:none; color:white; padding: 6px 12px; border-radius: 6px; cursor:pointer; font-size: 12px;">Logout</button>
         </div>
         <div class="chat-messages" id="message-list">
-            <p style="color: #9ca3af; text-align: center; font-size: 13px; margin-top: 40px;">You are verified and securely connected to ChatME!</p>
+            <p style="color: #9ca3af; text-align: center; font-size: 13px; margin-top: 40px;">You are verified and securely connected!</p>
         </div>
         <div style="display: flex; gap: 8px;">
             <input type="text" id="chat-input" placeholder="Type a message..." style="margin: 0;" />
@@ -143,56 +143,51 @@
         const SUPABASE_URL = 'YOUR_SUPABASE_URL';
         const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { detectSessionInUrl: true, flowType: 'pkce' }
+        });
 
-        // UI screen references
         const loginScreen = document.getElementById('login-screen');
         const registerScreen = document.getElementById('register-screen');
         const verificationWall = document.getElementById('verification-wall');
         const chatScreen = document.getElementById('chat-screen');
         const verifyEmailTarget = document.getElementById('verify-email-target');
 
-        // Toggle between Login and Register panels
-        function switchScreen(screen) {
+        function switchView(viewName) {
             loginScreen.classList.add('hidden');
             registerScreen.classList.add('hidden');
             verificationWall.classList.add('hidden');
             chatScreen.classList.add('hidden');
 
-            if (screen === 'login') loginScreen.classList.remove('hidden');
-            if (screen === 'register') registerScreen.classList.remove('hidden');
+            if (viewName === 'login') loginScreen.classList.remove('hidden');
+            if (viewName === 'register') registerScreen.classList.remove('hidden');
+            if (viewName === 'verify') verificationWall.classList.remove('hidden');
+            if (viewName === 'chat') chatScreen.classList.remove('hidden');
         }
 
-        // Check active session on initial page load
+        // On page load, evaluate user credentials & email confirmation state
         window.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                routeUser(session.user);
+            const { data: { user }, error } = await supabase.auth.getUser();
+            
+            if (user) {
+                if (user.email_confirmed_at) {
+                    switchView('chat');
+                } else {
+                    verifyEmailTarget.innerText = user.email;
+                    switchView('verify');
+                }
+            } else {
+                switchView('login');
             }
         });
 
-        // Route user based on email confirmation status
-        function routeUser(user) {
-            loginScreen.classList.add('hidden');
-            registerScreen.classList.add('hidden');
-
-            if (!user.email_confirmed_at) {
-                verifyEmailTarget.innerText = user.email;
-                verificationWall.classList.remove('hidden');
-                chatScreen.classList.add('hidden');
-            } else {
-                verificationWall.classList.add('hidden');
-                chatScreen.classList.remove('hidden');
-            }
-        }
-
-        // 1. REGISTER FLOW
+        // Register Flow
         async function handleRegister() {
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
 
             if (!email || !password) {
-                alert("Please fill in both email and password.");
+                alert("Please complete both email and password fields.");
                 return;
             }
 
@@ -203,96 +198,92 @@
             });
 
             if (error) {
-                alert("Registration Error: " + error.message);
+                alert("Registration error: " + error.message);
                 return;
             }
 
             if (data.user) {
-                alert("Verification email sent! Please check your real inbox.");
-                routeUser(data.user);
+                alert("Account created! Verification email dispatched to your inbox.");
+                verifyEmailTarget.innerText = email;
+                switchView('verify');
             }
         }
 
-        // 2. SIGN IN FLOW
+        // Sign In Flow
         async function handleSignIn() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
 
             if (!email || !password) {
-                alert("Please fill in both email and password.");
+                alert("Please enter both email and password.");
                 return;
             }
 
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                alert("Login Failed: " + error.message);
+                alert("Login failed: " + error.message);
                 return;
             }
 
             const user = data.user;
             if (user) {
-                // Strict check: if email is not confirmed, lock them out immediately
+                // Strict check: Block entry if unconfirmed
                 if (!user.email_confirmed_at) {
-                    alert("Access Denied: Your email address is not verified yet!");
-                    routeUser(user);
+                    alert("Access denied: Please verify your real email address first.");
+                    verifyEmailTarget.innerText = user.email;
+                    switchView('verify');
                     return;
                 }
-                routeUser(user);
+                switchView('chat');
             }
         }
 
-        // 3. CHECK VERIFICATION BUTTON (After clicking link)
+        // Manual check verification button
         async function checkVerificationStatus() {
+            await supabase.auth.refreshSession();
             const { data: { user }, error } = await supabase.auth.getUser();
-            
+
             if (error || !user) {
+                alert("Session invalid. Please log in again.");
                 logout();
                 return;
             }
 
-            // Refresh auth session to capture updated confirmation flags
-            await supabase.auth.refreshSession();
-            
             if (user.email_confirmed_at) {
-                alert("Email successfully confirmed! Welcome to ChatME!");
-                routeUser(user);
+                alert("Email verified successfully! Welcome to ChatME!");
+                switchView('chat');
             } else {
-                alert("Not verified yet. Please check your inbox and click the verification link first.");
+                alert("Not verified yet. Please click the link inside your email message first.");
             }
         }
 
-        // 4. RESEND VERIFICATION EMAIL
+        // Resend confirmation link
         async function resendEmail() {
             const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
+            if (user && user.email) {
                 await supabase.auth.resend({
                     type: 'signup',
                     email: user.email,
                 });
                 alert("Verification link resent! Check your inbox.");
             } else {
-                alert("Session expired. Please log back in.");
+                alert("No active registration context found. Please log in or register again.");
                 logout();
             }
         }
 
-        // 5. LOGOUT
+        // Logout
         async function logout() {
             await supabase.auth.signOut();
-            chatScreen.classList.add('hidden');
-            verificationWall.classList.add('hidden');
-            registerScreen.classList.add('hidden');
-            loginScreen.classList.remove('hidden');
-            
-            // Clear input forms
             document.getElementById('login-email').value = '';
             document.getElementById('login-password').value = '';
             document.getElementById('reg-email').value = '';
             document.getElementById('reg-password').value = '';
+            switchView('login');
         }
 
-        // 6. CHAT SEND (Frontend placeholder view)
+        // Chat Demo Frontend Send
         function sendMessage() {
             const input = document.getElementById('chat-input');
             if (!input.value.trim()) return;
