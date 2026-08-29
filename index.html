@@ -4,14 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatME - Viral Neon Edition</title>
+    <title>ChatME - Verified Authentication Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Viral High-Contrast Dark Neon Palette */
             --bg-primary: #0b0f19;
             --bg-secondary: #131c2e;
             --bg-tertiary: #1c2a44;
@@ -24,6 +23,8 @@
             --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
             --outgoing-msg: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
             --incoming-msg: #1a2744;
+            --error-red: #ef4444;
+            --success-green: #10b981;
         }
 
         * {
@@ -43,6 +44,189 @@
             overflow: hidden;
         }
 
+        /* Full Screen Auth Portal */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(11, 15, 25, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.3s ease;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .auth-header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .auth-header h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-header p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .input-field-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-field-wrapper i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .input-field-wrapper input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 12px 14px 12px 40px;
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-field-wrapper input:focus {
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+        }
+
+        .auth-btn {
+            background: var(--accent-gradient);
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+            transition: transform 0.2s;
+            margin-top: 4px;
+        }
+
+        .auth-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .auth-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error-red);
+            color: #fca5a5;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .auth-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-green);
+            color: #6ee7b7;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .auth-switch {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .auth-switch a {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Verification code input styling */
+        .otp-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .otp-input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+        }
+
+        /* Main Chat App Container Styles */
         .app-container {
             display: flex;
             width: 100vw;
@@ -52,7 +236,6 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 360px;
             border-right: 1px solid var(--border-color);
@@ -220,7 +403,6 @@
             text-overflow: ellipsis;
         }
 
-        /* Main Chat Area Styles */
         .chat-area {
             flex: 1;
             display: flex;
@@ -349,7 +531,6 @@
             transform: scale(1.05);
         }
 
-        /* Responsive Mobile Layout Fix */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -361,6 +542,94 @@
     </style>
 </head>
 <body>
+
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <div id="loginSection">
+                <div class="auth-header">
+                    <h2>ចូលគណនី (Login)</h2>
+                    <p>សូមស្វាគមន៍មកកាន់ ChatME វិញ!</p>
+                </div>
+                <div id="loginError" class="auth-error hidden"></div>
+                <form class="auth-form" onsubmit="handleLogin(event)">
+                    <div class="input-group">
+                        <label>អ៊ីមែល (Email)</label>
+                        <div class="input-field-wrapper">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="email" id="loginEmail" placeholder="example@gmail.com" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>ពាក្យសម្ងាត់ (Password)</label>
+                        <div class="input-field-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="loginPassword" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-btn">ចូលប្រើប្រាស់ (Sign In)</button>
+                </form>
+                <div class="auth-switch" style="margin-top: 16px;">
+                    ពុំទាន់មានគណនីមែនទេ? <a onclick="switchView('register')">ចុះឈ្មោះទីនេះ (Register)</a>
+                </div>
+            </div>
+
+            <div id="registerSection" class="hidden">
+                <div class="auth-header">
+                    <h2>បង្កើតគណនីថ្មី (Register)</h2>
+                    <p>ចូលរួមសហគមន៍ ChatME ថ្ងៃនេះ!</p>
+                </div>
+                <div id="regError" class="auth-error hidden"></div>
+                <form class="auth-form" onsubmit="handleRegister(event)">
+                    <div class="input-group">
+                        <label>ឈ្មោះពេញ (Full Name)</label>
+                        <div class="input-field-wrapper">
+                            <i class="fa-solid fa-id-card"></i>
+                            <input type="text" id="regName" placeholder="ឈ្មោះរបស់អ្នក" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>អ៊ីមែល (Email)</label>
+                        <div class="input-field-wrapper">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="email" id="regEmail" placeholder="example@gmail.com" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>ពាក្យសម្ងាត់ (Password - min 6 chars)</label>
+                        <div class="input-field-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="regPassword" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-btn">បន្តការចុះឈ្មោះ (Sign Up)</button>
+                </form>
+                <div class="auth-switch" style="margin-top: 16px;">
+                    មានគណនីរួចហើយ? <a onclick="switchView('login')">ចូលគណនី (Login)</a>
+                </div>
+            </div>
+
+            <div id="verifySection" class="hidden">
+                <div class="auth-header">
+                    <h2>ផ្ទៀងផ្ទាត់គណនី (Confirm OTP)</h2>
+                    <p>កូដបញ្ជាក់សុវត្ថិភាព 4 ខ្ទង់ត្រូវបានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក (សូមប្រើលេខ: <strong style="color:var(--neon-cyan)">1234</strong>)</p>
+                </div>
+                <div id="verifyError" class="auth-error hidden"></div>
+                <div id="verifySuccess" class="auth-success hidden"></div>
+                <form class="auth-form" onsubmit="handleVerify(event)">
+                    <div class="otp-container">
+                        <input type="text" maxlength="1" class="otp-input" required autofocus>
+                        <input type="text" maxlength="1" class="otp-input" required>
+                        <input type="text" maxlength="1" class="otp-input" required>
+                        <input type="text" maxlength="1" class="otp-input" required>
+                    </div>
+                    <button type="submit" class="auth-btn">បញ្ជាក់ការចុះឈ្មោះ (Verify Code)</button>
+                </form>
+                <div class="auth-switch" style="margin-top: 16px;">
+                    មិនទទួលបានកូដមែនទេ? <a onclick="resendCode()">ផ្ញើកូដសារថ្មី (Resend)</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="app-container">
         <aside class="sidebar">
@@ -378,10 +647,10 @@
             </div>
             <div class="chat-list">
                 <div class="chat-item active">
-                    <div class="avatar">លី</div>
+                    <div class="avatar" id="sidebarUserAvatar">លី</div>
                     <div class="chat-info">
                         <div class="chat-name-row">
-                            <h4>លីណា (Lina Viral)</h4>
+                            <h4 id="sidebarUserName">លីណា (Lina Viral)</h4>
                             <span class="time">១២:៤៥ <i class="fa-solid fa-check-double" style="color: #06b6d4; font-size: 0.65rem;"></i></span>
                         </div>
                         <p class="last-msg">វីដេអូថ្មីឡើង Trend ខ្លាំងមែនទែនថ្ងៃនេះ! 🔥</p>
@@ -393,9 +662,9 @@
         <main class="chat-area">
             <header class="chat-header">
                 <div class="active-user-info">
-                    <div class="avatar small">លី</div>
+                    <div class="avatar small" id="headerUserAvatar">លី</div>
                     <div>
-                        <h3>លីណា (Lina Viral)</h3>
+                        <h3 id="headerUserName">លីណា (Lina Viral)</h3>
                         <span class="status"><i class="fa-solid fa-bolt" style="font-size: 0.65rem;"></i> កំពុងសកម្ម (Active now)</span>
                     </div>
                 </div>
@@ -403,17 +672,17 @@
                     <button title="ហៅទូរស័ព្ទ / Voice Call"><i class="fa-solid fa-phone-volume"></i></button>
                     <button title="ហៅវីដេអូ / Video Call"><i class="fa-solid fa-video"></i></button>
                     <button title="ផ្ញើរឿងរ៉ាវ / Stories"><i class="fa-solid fa-circle-nodes"></i></button>
-                    <button title="ជម្រើសបន្ថែម / More Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    <button onclick="logout()" title="ចាកចេញ / Logout"><i class="fa-solid fa-right-from-bracket" style="color: #ef4444;"></i></button>
                 </div>
             </header>
 
             <div class="message-feed">
                 <div class="message incoming">
-                    <p>សួស្តី! ត្រៀមខ្លួនសម្រាប់មាតិកា Viral ថ្មីៗនៅលើ ChatME ហើយឬនៅ? 🚀</p>
+                    <p>សួស្តី! សូមស្វាគមន៍មកកាន់ប្រព័ន្ធ ChatME ដែលបានឆ្លងកាត់ការចុះឈ្មោះ និងការផ្ទៀងផ្ទាត់បញ្ជាក់គណនីយ៉ាងត្រឹមត្រូវ។ 🚀</p>
                     <span class="msg-time">១២:៤០ ព្រឹក</span>
                 </div>
                 <div class="message outgoing">
-                    <p>ត្រៀមរួចជាស្រេច! ការរចនាម៉ូដបែប Neon Viral នេះគឺទាក់ទាញខ្លាំងមែនទែន។ ✨</p>
+                    <p id="welcomeUserMsg">អស្ចារ្យណាស់! ការផ្ទៀងផ្ទាត់កូដបញ្ជាក់ដំណើរការបានល្អឥតខ្ចោះ។ ✨</p>
                     <span class="msg-time">១២:៤២ ព្រឹក <i class="fa-solid fa-check-double" style="color: #c084fc;"></i></span>
                 </div>
             </div>
@@ -429,7 +698,30 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
+        // Temporary holding data for active registration process before confirmation
+        let tempPendingUser = null;
+
+        window.addEventListener("DOMContentLoaded", () => {
+            const currentUser = localStorage.getItem("chatme_current_user");
+            if (currentUser) {
+                hideAuthModal(JSON.parse(currentUser));
+            }
+
+            // OTP Input auto-navigation logic
+            const otpInputs = document.querySelectorAll(".otp-input");
+            otpInputs.forEach((input, index) => {
+                input.addEventListener("input", (e) => {
+                    if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Backspace" && !input.value && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+            });
+
             const messageInput = document.getElementById("messageInput");
             const sendBtn = document.getElementById("sendBtn");
             const messageFeed = document.querySelector(".message-feed");
@@ -459,13 +751,140 @@
                     sendMessage();
                 }
             });
-
-            function escapeHTML(str) {
-                return str.replace(/[&<>'"]/g, 
-                    tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-                );
-            }
         });
+
+        // Switch between auth panels
+        function switchView(viewName) {
+            document.getElementById("loginSection").classList.add("hidden");
+            document.getElementById("registerSection").classList.add("hidden");
+            document.getElementById("verifySection").classList.add("hidden");
+
+            document.getElementById("loginError").classList.add("hidden");
+            document.getElementById("regError").classList.add("hidden");
+
+            if (viewName === 'login') {
+                document.getElementById("loginSection").classList.remove("hidden");
+            } else if (viewName === 'register') {
+                document.getElementById("registerSection").classList.remove("hidden");
+            } else if (viewName === 'verify') {
+                document.getElementById("verifySection").classList.remove("hidden");
+            }
+        }
+
+        // Step 1: Handle Register Information & Request Confirmation Code
+        function handleRegister(event) {
+            event.preventDefault();
+            const name = document.getElementById("regName").value.trim();
+            const email = document.getElementById("regEmail").value.trim().toLowerCase();
+            const password = document.getElementById("regPassword").value;
+            const errorBox = document.getElementById("regError");
+
+            if (password.length < 6) {
+                errorBox.innerText = "ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៦ តួអក្សរ!";
+                errorBox.classList.remove("hidden");
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem("chatme_users") || "[]");
+            const existingUser = users.find(u => u.email === email);
+            if (existingUser) {
+                errorBox.innerText = "អ៊ីមែលនេះមានរួចហើយ សូមប្រើប្រាស់អ៊ីមែលផ្សេង!";
+                errorBox.classList.remove("hidden");
+                return;
+            }
+
+            // Save temporary user payload awaiting confirmation
+            tempPendingUser = { name, email, password };
+            
+            // Switch to confirmation panel view
+            switchView('verify');
+        }
+
+        // Step 2: Handle OTP Confirmation Before Final Approval
+        function handleVerify(event) {
+            event.preventDefault();
+            const otpInputs = document.querySelectorAll(".otp-input");
+            let enteredOtp = "";
+            otpInputs.forEach(input => enteredOtp += input.value);
+            const verifyError = document.getElementById("verifyError");
+
+            if (enteredOtp !== "1234") {
+                verifyError.innerText = "កូដបញ្ជាក់មិនถูกต้องទេ! (សូមប្រើលេខ 1234)";
+                verifyError.classList.remove("hidden");
+                return;
+            }
+
+            // Finalize registration and store securely
+            let users = JSON.parse(localStorage.getItem("chatme_users") || "[]");
+            users.push(tempPendingUser);
+            localStorage.setItem("chatme_users", JSON.stringify(users));
+            localStorage.setItem("chatme_current_user", JSON.stringify(tempPendingUser));
+
+            hideAuthModal(tempPendingUser);
+            tempPendingUser = null;
+        }
+
+        // Resend code simulated action
+        function resendCode() {
+            const successBox = document.getElementById("verifySuccess");
+            successBox.innerText = "កូដបញ្ជាក់ថ្មីត្រូវបានផ្ញើជូនរួចរាល់! (សូមប្រើលេខ 1234)";
+            successBox.classList.remove("hidden");
+            setTimeout(() => successBox.classList.add("hidden"), 4000);
+        }
+
+        // Real Login Logic
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+            const password = document.getElementById("loginPassword").value;
+            const errorBox = document.getElementById("loginError");
+
+            let users = JSON.parse(localStorage.getItem("chatme_users") || "[]");
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (!user) {
+                errorBox.innerText = "អ៊ីមែល ឬ ពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ!";
+                errorBox.classList.remove("hidden");
+                return;
+            }
+
+            localStorage.setItem("chatme_current_user", JSON.stringify(user));
+            hideAuthModal(user);
+        }
+
+        // Hide Authentication Overlay & Personalize UI
+        function hideAuthModal(user) {
+            const authOverlay = document.getElementById("authOverlay");
+            authOverlay.style.opacity = "0";
+            setTimeout(() => {
+                authOverlay.style.display = "none";
+            }, 300);
+
+            const initials = user.name ? user.name.substring(0, 2).toUpperCase() : "ME";
+            document.getElementById("sidebarUserAvatar").innerText = initials;
+            document.getElementById("sidebarUserName").innerText = user.name;
+            document.getElementById("headerUserAvatar").innerText = initials;
+            document.getElementById("headerUserName").innerText = user.name;
+            document.getElementById("welcomeUserMsg").innerText = `សួស្តី ${user.name}! គណនីរបស់អ្នកត្រូវបានផ្ទៀងផ្ទាត់ និងដំណើរការដោយសុវត្ថិភាព។ ✨`;
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem("chatme_current_user");
+            const authOverlay = document.getElementById("authOverlay");
+            authOverlay.style.display = "flex";
+            authOverlay.style.opacity = "1";
+            document.getElementById("loginForm").reset();
+            document.getElementById("registerForm").reset();
+            document.querySelectorAll(".otp-input").forEach(i => i.value = "");
+            switchView('login');
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
     </script>
 </body>
 </html>
