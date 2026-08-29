@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatME - Viral Neon Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Viral High-Contrast Dark Neon Palette */
+            --bg-primary: #0b0f19;
+            --bg-secondary: #131c2e;
+            --bg-tertiary: #1c2a44;
+            --border-color: #283a5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --neon-purple: #8b5cf6;
+            --neon-pink: #ec4899;
+            --neon-cyan: #06b6d4;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            --outgoing-msg: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+            --incoming-msg: #1a2744;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Hanuman', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            max-width: 1600px;
+            background: var(--bg-secondary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 360px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            gap: 12px;
+        }
+
+        .menu-btn, .chat-actions button, .chat-input-box button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .menu-btn:hover, .chat-actions button:hover, .chat-input-box button:hover {
+            background: var(--bg-tertiary);
+            color: var(--neon-pink);
+        }
+
+        .search-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .search-bar {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px 10px 38px;
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-bar:focus {
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+        }
+
+        .chat-folders {
+            display: flex;
+            padding: 0 16px 12px 16px;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .folder {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .folder:hover {
+            color: var(--text-main);
+            background: var(--bg-tertiary);
+        }
+
+        .folder.active {
+            background: var(--accent-gradient);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            display: flex;
+            padding: 12px 16px;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-left: 3px solid transparent;
+        }
+
+        .chat-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .chat-item.active {
+            background: var(--bg-tertiary);
+            border-left-color: var(--neon-pink);
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+        }
+
+        .avatar.small {
+            width: 36px;
+            height: 36px;
+            font-size: 0.8rem;
+        }
+
+        .chat-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .chat-name-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .chat-name-row h4 {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .time, .msg-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .last-msg {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Main Chat Area Styles */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+
+        .chat-header {
+            height: 68px;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .active-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .active-user-info h3 {
+            font-size: 1rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .status {
+            font-size: 0.75rem;
+            color: var(--neon-cyan);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .message-feed {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background-image: radial-gradient(circle, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .message {
+            max-width: 60%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .message.incoming {
+            background: var(--incoming-msg);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .message.outgoing {
+            background: var(--outgoing-msg);
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-time {
+            float: right;
+            margin-left: 12px;
+            margin-top: 6px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chat-input-box {
+            height: 76px;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .chat-input-box input {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input-box input:focus {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+        }
+
+        .send-btn {
+            background: var(--accent-gradient) !important;
+            color: #ffffff !important;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
+            transition: transform 0.2s !important;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Responsive Mobile Layout Fix */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+            .chat-area {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <button class="menu-btn" title="មីនុយ / Menu"><i class="fa-solid fa-fire"></i></button>
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="ស្វែងរក / Search viral..." class="search-bar">
+                </div>
+            </div>
+            <div class="chat-folders">
+                <button class="folder active">ទាន់ហេតុការណ៍ (Trending)</button>
+                <button class="folder">វីដេអូខ្លី (Reels)</button>
+                <button class="folder">ក្រុម (Groups)</button>
+            </div>
+            <div class="chat-list">
+                <div class="chat-item active">
+                    <div class="avatar">លី</div>
+                    <div class="chat-info">
+                        <div class="chat-name-row">
+                            <h4>លីណា (Lina Viral)</h4>
+                            <span class="time">១២:៤៥ <i class="fa-solid fa-check-double" style="color: #06b6d4; font-size: 0.65rem;"></i></span>
+                        </div>
+                        <p class="last-msg">វីដេអូថ្មីឡើង Trend ខ្លាំងមែនទែនថ្ងៃនេះ! 🔥</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="chat-area">
+            <header class="chat-header">
+                <div class="active-user-info">
+                    <div class="avatar small">លី</div>
+                    <div>
+                        <h3>លីណា (Lina Viral)</h3>
+                        <span class="status"><i class="fa-solid fa-bolt" style="font-size: 0.65rem;"></i> កំពុងសកម្ម (Active now)</span>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button title="ហៅទូរស័ព្ទ / Voice Call"><i class="fa-solid fa-phone-volume"></i></button>
+                    <button title="ហៅវីដេអូ / Video Call"><i class="fa-solid fa-video"></i></button>
+                    <button title="ផ្ញើរឿងរ៉ាវ / Stories"><i class="fa-solid fa-circle-nodes"></i></button>
+                    <button title="ជម្រើសបន្ថែម / More Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                </div>
+            </header>
+
+            <div class="message-feed">
+                <div class="message incoming">
+                    <p>សួស្តី! ត្រៀមខ្លួនសម្រាប់មាតិកា Viral ថ្មីៗនៅលើ ChatME ហើយឬនៅ? 🚀</p>
+                    <span class="msg-time">១២:៤០ ព្រឹក</span>
+                </div>
+                <div class="message outgoing">
+                    <p>ត្រៀមរួចជាស្រេច! ការរចនាម៉ូដបែប Neon Viral នេះគឺទាក់ទាញខ្លាំងមែនទែន។ ✨</p>
+                    <span class="msg-time">១២:៤២ ព្រឹក <i class="fa-solid fa-check-double" style="color: #c084fc;"></i></span>
+                </div>
+            </div>
+
+            <footer class="chat-input-box">
+                <button title="ភ្ជាប់ឯកសារ / Attach"><i class="fa-solid fa-paperclip"></i></button>
+                <button title="ស្ទីឃ័រ និង GIF / Stickers"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                <input type="text" placeholder="ផ្ញើសារ ឬ តំណភ្ជាប់ Viral... / Type message..." id="messageInput">
+                <button title="សារសំឡេង / Voice Note"><i class="fa-solid fa-microphone"></i></button>
+                <button class="send-btn" id="sendBtn" title="ផ្ញើសារ / Send"><i class="fa-solid fa-paper-plane"></i></button>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const messageInput = document.getElementById("messageInput");
+            const sendBtn = document.getElementById("sendBtn");
+            const messageFeed = document.querySelector(".message-feed");
+
+            function sendMessage() {
+                const text = messageInput.value.trim();
+                if (!text) return;
+
+                const msgDiv = document.createElement("div");
+                msgDiv.className = "message outgoing";
+                
+                const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                msgDiv.innerHTML = `
+                    <p>${escapeHTML(text)}</p>
+                    <span class="msg-time">${currentTime} <i class="fa-solid fa-check" style="color: #f472b6;"></i></span>
+                `;
+
+                messageFeed.appendChild(msgDiv);
+                messageInput.value = "";
+                messageFeed.scrollTop = messageFeed.scrollHeight;
+            }
+
+            sendBtn.addEventListener("click", sendMessage);
+            messageInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    sendMessage();
+                }
+            });
+
+            function escapeHTML(str) {
+                return str.replace(/[&<>'"]/g, 
+                    tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+                );
+            }
+        });
+    </script>
+</body>
+</html>
