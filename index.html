@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChatME - Social, Stories & Presence Suite</title>
+  <title>ChatME</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,7 +30,7 @@
       border: 1px solid #e2e8f0;
     }
 
-    h2 { margin-bottom: 6px; color: #0284c7; font-size: 24px; font-weight: 600; }
+    h2 { margin-bottom: 20px; color: #0284c7; font-size: 24px; font-weight: 600; }
     p.subtitle { color: #64748b; font-size: 13px; margin-bottom: 24px; }
 
     .input-group { text-align: left; margin-bottom: 16px; }
@@ -202,10 +202,9 @@
   <!-- LOGIN SCREEN -->
   <div id="login-screen" class="card">
     <h2>ChatME</h2>
-    <p class="subtitle">Social Collaboration & Stories Suite</p>
     
     <div class="input-group">
-      <label>Work Email</label>
+      <label>Email</label>
       <div class="input-wrapper">
         <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
         <input type="email" id="login-email" placeholder="name@company.com">
@@ -232,10 +231,9 @@
   <!-- REGISTER SCREEN -->
   <div id="register-screen" class="card hidden">
     <h2>Create Account</h2>
-    <p class="subtitle">Join the network</p>
     
     <div class="input-group">
-      <label>Work Email</label>
+      <label>Email</label>
       <div class="input-wrapper">
         <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
         <input type="email" id="reg-email" placeholder="name@company.com">
@@ -261,7 +259,7 @@
   <div id="guest-modal" class="modal-overlay hidden">
     <div class="card" style="margin: auto;" onclick="event.stopPropagation()">
       <h2>Guest Portal</h2>
-      <p class="subtitle">Register your guest credentials or log back in.</p>
+      <p class="subtitle">Register your guest credentials or log back in from any device.</p>
       
       <div class="input-group">
         <label>User ID / Guest Name</label>
@@ -392,7 +390,7 @@
       </div>
 
       <div class="chat-messages" id="message-list">
-        <div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">Welcome back! Online tracking and device avatars active.</div>
+        <div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">Welcome back! Cross-device guest IDs and presence active.</div>
       </div>
 
       <div id="reply-banner" class="active-reply-banner hidden">
@@ -535,7 +533,7 @@
       }
     }
 
-    function handleGuestLoginOrRegister() {
+    async function handleGuestLoginOrRegister() {
       const userId = document.getElementById('guest-userid').value.trim();
       const password = document.getElementById('guest-password').value;
       const avatarFile = document.getElementById('guest-avatar-file').files[0];
@@ -545,25 +543,51 @@
         return;
       }
 
-      // Check password matching if user already exists
-      const existingPass = localStorage.getItem(`chatme_pass_${userId}`);
-      if (existingPass && existingPass !== password) {
-        showStatus('guest-modal-status', 'Incorrect password for this User ID!', true);
-        return;
+      let avatarUrl = '';
+
+      // Check cloud (Supabase DB) or fallback to localStorage for cross-device guest authentication records
+      try {
+        const { data: existingGuest, error } = await supabaseClient
+          .from('guest_users')
+          .select('*')
+          .eq('userid', userId)
+          .single();
+
+        if (existingGuest) {
+          if (existingGuest.password !== password) {
+            showStatus('guest-modal-status', 'Incorrect password for this User ID!', true);
+            return;
+          }
+          avatarUrl = existingGuest.avatar_url;
+        } else {
+          if (avatarFile) {
+            avatarUrl = URL.createObjectURL(avatarFile);
+          } else {
+            showStatus('guest-modal-status', 'Please upload a profile picture for your new guest ID.', true);
+            return;
+          }
+          // Save new guest profile to Supabase so it's accessible across other devices
+          await supabaseClient.from('guest_users').insert([
+            { userid: userId, password: password, avatar_url: avatarUrl }
+          ]);
+        }
+      } catch (err) {
+        // Fallback local persistence if offline or table not present yet
+        const existingPass = localStorage.getItem(`chatme_pass_${userId}`);
+        if (existingPass && existingPass !== password) {
+          showStatus('guest-modal-status', 'Incorrect password for this User ID!', true);
+          return;
+        }
+        avatarUrl = localStorage.getItem(`chatme_avatar_${userId}`) || '';
+        if (avatarFile) avatarUrl = URL.createObjectURL(avatarFile);
+        else if (!existingPass && !avatarUrl) {
+          showStatus('guest-modal-status', 'Please upload a profile picture for your new guest ID.', true);
+          return;
+        }
+        localStorage.setItem(`chatme_pass_${userId}`, password);
+        localStorage.setItem(`chatme_avatar_${userId}`, avatarUrl);
       }
 
-      // If new user or updating, avatar selection is expected on first creation
-      let avatarUrl = localStorage.getItem(`chatme_avatar_${userId}`) || '';
-      if (avatarFile) {
-        avatarUrl = URL.createObjectURL(avatarFile);
-      } else if (!existingPass && !avatarUrl) {
-        showStatus('guest-modal-status', 'Please upload a profile picture for your new guest ID.', true);
-        return;
-      }
-
-      // Store credentials and data locally
-      localStorage.setItem(`chatme_pass_${userId}`, password);
-      localStorage.setItem(`chatme_avatar_${userId}`, avatarUrl);
       localStorage.setItem('chatme_guest_name', userId);
       localStorage.setItem('chatme_guest_pass', password);
       localStorage.setItem('chatme_guest_avatar', avatarUrl);
