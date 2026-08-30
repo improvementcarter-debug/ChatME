@@ -259,4 +259,207 @@
       <p class="subtitle">Log in or register with your Guest ID & Password across devices.</p>
       
       <div class="input-group">
-        <label>User ID / Guest Name
+        <label>User ID / Guest Name</label>
+        <input type="text" id="guest-userid" placeholder="e.g. AlexMorgan">
+      </div>
+      
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="guest-password" placeholder="Enter your guest password">
+      </div>
+
+      <div class="input-group">
+        <label>Profile Picture (From Device)</label>
+        <input type="file" id="guest-avatar-file" accept="image/*" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; width: 100%;">
+      </div>
+
+      <button class="primary-btn" onclick="handleGuestLoginOrRegister()">Enter Workspace</button>
+      <button class="secondary-btn" onclick="toggleGuestModal(false)">Cancel</button>
+      <div id="guest-modal-status" class="status"></div>
+    </div>
+  </div>
+
+  <div id="verification-wall" class="card hidden">
+    <h2>Check Your Email ✉️</h2>
+    <p class="subtitle">Confirmation link sent to <b id="verify-email-target" style="color:#1e293b;"></b></p>
+    <button class="primary-btn" onclick="checkVerificationStatus()">I Have Verified My Email</button>
+    <button class="secondary-btn" onclick="resendEmail()">Resend Link</button>
+    <button class="secondary-btn" onclick="logout()" style="border-color:#ef4444; color:#ef4444;">Back to Login</button>
+    <div id="verify-status" class="status"></div>
+  </div>
+
+  <div id="profile-modal" class="modal-overlay hidden">
+    <div class="card" style="margin: auto;" onclick="event.stopPropagation()">
+      <h2>Edit Profile</h2>
+      <p class="subtitle">Update your display name and avatar picture</p>
+      <div class="input-group">
+        <label>Display Name</label>
+        <input type="text" id="edit-display-name" placeholder="Enter display name...">
+      </div>
+      <div class="input-group">
+        <label>New Avatar Image (From Device)</label>
+        <input type="file" id="edit-avatar-file" accept="image/*" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; width: 100%;">
+      </div>
+      <button class="primary-btn" onclick="saveProfileChanges()">Save Changes</button>
+      <button class="secondary-btn" onclick="toggleProfileModal(false)">Cancel</button>
+    </div>
+  </div>
+
+  <div id="story-viewer-modal" class="modal-overlay hidden" onclick="closeStoryViewer()">
+    <div style="background:#1e293b; color:#fff; padding:20px; border-radius:12px; width:320px; height:450px; display:flex; flex-direction:column; justify-content:space-between; position:relative; text-align:center;" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+        <span id="viewer-story-author" style="font-weight:bold;">Author</span>
+        <button onclick="closeStoryViewer()" style="background:transparent; border:none; color:#fff; font-size:16px; cursor:pointer;">✕</button>
+      </div>
+      <div id="viewer-story-content" style="flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; margin:10px 0;"></div>
+      <div style="font-size:11px; color:#94a3b8;">Expires in 24 hours</div>
+    </div>
+  </div>
+
+  <div id="add-story-modal" class="modal-overlay hidden">
+    <div class="card" style="margin: auto;" onclick="event.stopPropagation()">
+      <h2>Post a Story 📸</h2>
+      <p class="subtitle">Select a photo or video from your device</p>
+      <div class="input-group">
+        <label>Choose File</label>
+        <input type="file" id="story-file-input" accept="image/*,video/*" style="padding: 8px; border: none; background: transparent;">
+      </div>
+      <button class="primary-btn" onclick="publishStoryFromFile()">Publish Story</button>
+      <button class="secondary-btn" onclick="toggleAddStoryModal(false)">Cancel</button>
+    </div>
+  </div>
+
+  <div id="chat-screen" class="hidden">
+    <div class="telegram-sidebar">
+      <div class="sidebar-header">
+        <div class="user-profile-preview" onclick="toggleProfileModal(true)" title="Click to edit profile">
+          <div class="avatar-wrapper">
+            <div class="avatar-circle" id="sidebar-avatar-container">U</div>
+            <div class="status-dot online" id="my-status-dot" title="Online"></div>
+          </div>
+          <div style="text-align:left; overflow:hidden;">
+            <div id="sidebar-username" style="font-size:12px; font-weight:600; color:#1e293b; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">User</div>
+            <div id="sidebar-badge-container"></div>
+          </div>
+        </div>
+        <button onclick="logout()" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:12px; font-weight:500;" title="Logout">Exit</button>
+      </div>
+      
+      <div class="stories-strip" id="stories-strip-container">
+        <div class="story-bubble-item" onclick="toggleAddStoryModal(true)">
+          <div class="story-ring add-story">
+            <div class="story-avatar" style="font-size:20px; color:#64748b;">+</div>
+          </div>
+          <div class="story-name">Add Story</div>
+        </div>
+      </div>
+
+      <div class="sidebar-channels">
+        <div class="sidebar-section-title">Channels</div>
+        <div class="channel-item active" onclick="selectChat('room', 'ChatME\'s Room', this)">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg>
+          ChatME's Room
+        </div>
+        <div class="channel-item" onclick="selectChat('room', 'Viral Feed', this)">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 m-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93 m6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          Viral Feed
+        </div>
+
+        <div class="sidebar-section-title">Members Online</div>
+        <div id="online-users-list" style="padding: 0 12px; font-size:12px; color:#64748b;">
+          <div style="font-style:italic;">Connecting presence channel...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="telegram-main">
+      <div class="chat-topbar">
+        <div>
+          <h4 id="current-chat-title" style="font-size:14px; color:#1e293b; font-weight:600; margin-bottom:2px;">ChatME's Room</h4>
+          <span style="font-size:11px; color:#64748b;">Social Workspace</span>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="message-list">
+        <div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">Welcome back! Cross-device guest IDs and presence active.</div>
+      </div>
+
+      <div id="reply-banner" class="active-reply-banner hidden">
+        <div>Replying to <b id="reply-target-author">User</b>: <span id="reply-target-snippet" style="color:#475569;">...</span></div>
+        <button onclick="cancelReply()" style="background:transparent; border:none; cursor:pointer; font-weight:bold; color:#64748b;">✕</button>
+      </div>
+
+      <div class="chat-input-bar">
+        <input type="file" id="media-file-input" style="display:none;" accept="image/*,video/*,audio/*" onchange="handleMediaUpload(event)">
+        
+        <button class="action-icon-btn" onclick="document.getElementById('media-file-input').click()" title="Attach Video/Image">
+          <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.1.9 2 2 2s2-.9 2-2V5c0-2.21-1.79-4-4-4S6 2.79 6 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+        </button>
+
+        <button class="action-icon-btn" id="mic-btn" onclick="toggleVoiceRecording()" title="Record Voice Note">
+          <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.39-.9.89 0 2.72-2.25 4.93-4.97 4.93-2.72 0-4.93-2.21-4.93-4.93 0-.5-.41-.89-.9-.89s-.9.39-.9.89c0 3.24 2.4 5.92 5.53 6.35V20h2v-2.76c3.13-.43 5.53-3.11 5.53-6.35 0-.5-.41-.89-.9-.89z"/></svg>
+        </button>
+
+        <input type="text" id="chat-input" placeholder="Type message or broadcast to network...">
+        
+        <button class="primary-btn" onclick="sendMessage()" style="width:80px; margin:0; padding:10px;">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://zsgcmauofwdjelawlbtz.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_nxNL8AP9xSIJDJN8eHKwhw_F-dZpDZ1';
+
+    let supabaseClient = null;
+    let currentUserType = null; 
+    let currentDisplayName = null;
+    let currentAvatarUrl = null;
+    let activeChatType = 'room';
+    let activeChatName = "ChatME's Room";
+    let presenceChannel = null;
+
+    let storiesList = [
+      { author: 'Director Sarah', avatar: '', media: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400', isVideo: false }
+    ];
+
+    let replyingToData = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+
+    const loginScreen = document.getElementById('login-screen');
+    const registerScreen = document.getElementById('register-screen');
+    const verificationWall = document.getElementById('verification-wall');
+    const chatScreen = document.getElementById('chat-screen');
+    const verifyEmailTarget = document.getElementById('verify-email-target');
+
+    function showStatus(id, message, isError = false) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = message; el.style.color = isError ? '#ef4444' : '#047857'; }
+    }
+
+    function switchView(v) {
+      loginScreen.classList.add('hidden');
+      registerScreen.classList.add('hidden');
+      verificationWall.classList.add('hidden');
+      chatScreen.classList.add('hidden');
+      if (v === 'login') loginScreen.classList.remove('hidden');
+      if (v === 'register') registerScreen.classList.remove('hidden');
+      if (v === 'verify') verificationWall.classList.remove('hidden');
+      if (v === 'chat') { 
+        chatScreen.classList.remove('hidden'); 
+        renderStories(); 
+        initPresenceTracking();
+      }
+    }
+
+    async function initializeApp() {
+      if (!window.supabase) return;
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      
+      const localGuest = localStorage.getItem('chatme_guest_name');
+      if (localGuest) {
+        currentUserType = 'guest';
+        currentDisplayName = localGuest;
+        currentAvatarUrl = localStorage.getItem('chatme_guest_avatar
