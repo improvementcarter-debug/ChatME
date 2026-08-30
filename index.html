@@ -40,7 +40,7 @@
     .input-wrapper svg {
       position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; fill: #94a3b8;
     }
-    input {
+    input[type="email"], input[type="password"], input[type="text"] {
       width: 100%; padding: 11px 12px 11px 40px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; color: #1e293b; font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s;
     }
     input:focus { border-color: #0284c7; outline: none; box-shadow: 0 0 0 3px rgba(2,132,199,0.15); }
@@ -261,7 +261,7 @@
   <div id="guest-modal" class="modal-overlay hidden">
     <div class="card" style="margin: auto;" onclick="event.stopPropagation()">
       <h2>Guest Portal</h2>
-      <p class="subtitle">Register your guest name and profile picture, or log in with your credentials.</p>
+      <p class="subtitle">Register your guest credentials or log back in.</p>
       
       <div class="input-group">
         <label>User ID / Guest Name</label>
@@ -274,8 +274,8 @@
       </div>
 
       <div class="input-group">
-        <label>Profile Picture URL</label>
-        <input type="text" id="guest-avatar" placeholder="https://example.com/photo.jpg">
+        <label>Profile Picture (From Device)</label>
+        <input type="file" id="guest-avatar-file" accept="image/*" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; width: 100%;">
       </div>
 
       <button class="primary-btn" onclick="handleGuestLoginOrRegister()">Enter Workspace</button>
@@ -304,8 +304,8 @@
         <input type="text" id="edit-display-name" placeholder="Enter display name...">
       </div>
       <div class="input-group">
-        <label>Avatar Image URL</label>
-        <input type="text" id="edit-avatar-url" placeholder="https://example.com/avatar.jpg">
+        <label>New Avatar Image (From Device)</label>
+        <input type="file" id="edit-avatar-file" accept="image/*" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; width: 100%;">
       </div>
       <button class="primary-btn" onclick="saveProfileChanges()">Save Changes</button>
       <button class="secondary-btn" onclick="toggleProfileModal(false)">Cancel</button>
@@ -392,7 +392,7 @@
       </div>
 
       <div class="chat-messages" id="message-list">
-        <div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">Welcome back! Online tracking and guest security profiles active.</div>
+        <div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">Welcome back! Online tracking and device avatars active.</div>
       </div>
 
       <div id="reply-banner" class="active-reply-banner hidden">
@@ -529,7 +529,7 @@
         modal.classList.remove('hidden');
         document.getElementById('guest-userid').value = localStorage.getItem('chatme_guest_name') || '';
         document.getElementById('guest-password').value = localStorage.getItem('chatme_guest_pass') || '';
-        document.getElementById('guest-avatar').value = localStorage.getItem('chatme_guest_avatar') || '';
+        document.getElementById('guest-avatar-file').value = '';
       } else {
         modal.classList.add('hidden');
       }
@@ -538,22 +538,32 @@
     function handleGuestLoginOrRegister() {
       const userId = document.getElementById('guest-userid').value.trim();
       const password = document.getElementById('guest-password').value;
-      const avatarUrl = document.getElementById('guest-avatar').value.trim();
+      const avatarFile = document.getElementById('guest-avatar-file').files[0];
 
-      if (!userId || !password || !avatarUrl) {
-        showStatus('guest-modal-status', 'Please provide User ID, Password, and Profile Picture URL.', true);
+      if (!userId || !password) {
+        showStatus('guest-modal-status', 'Please provide both User ID and Password.', true);
         return;
       }
 
-      // Check if this guest ID already exists with a different password
+      // Check password matching if user already exists
       const existingPass = localStorage.getItem(`chatme_pass_${userId}`);
       if (existingPass && existingPass !== password) {
         showStatus('guest-modal-status', 'Incorrect password for this User ID!', true);
         return;
       }
 
-      // Save user info and credentials locally for returning logins
+      // If new user or updating, avatar selection is expected on first creation
+      let avatarUrl = localStorage.getItem(`chatme_avatar_${userId}`) || '';
+      if (avatarFile) {
+        avatarUrl = URL.createObjectURL(avatarFile);
+      } else if (!existingPass && !avatarUrl) {
+        showStatus('guest-modal-status', 'Please upload a profile picture for your new guest ID.', true);
+        return;
+      }
+
+      // Store credentials and data locally
       localStorage.setItem(`chatme_pass_${userId}`, password);
+      localStorage.setItem(`chatme_avatar_${userId}`, avatarUrl);
       localStorage.setItem('chatme_guest_name', userId);
       localStorage.setItem('chatme_guest_pass', password);
       localStorage.setItem('chatme_guest_avatar', avatarUrl);
@@ -616,20 +626,28 @@
       const modal = document.getElementById('profile-modal');
       if (show) {
         document.getElementById('edit-display-name').value = currentDisplayName;
-        document.getElementById('edit-avatar-url').value = currentAvatarUrl;
+        document.getElementById('edit-avatar-file').value = '';
         modal.classList.remove('hidden');
       } else { modal.classList.add('hidden'); }
     }
 
     function saveProfileChanges() {
       const newName = document.getElementById('edit-display-name').value.trim();
-      const newAvatar = document.getElementById('edit-avatar-url').value.trim();
+      const avatarFile = document.getElementById('edit-avatar-file').files[0];
+      
       if (newName) currentDisplayName = newName;
-      currentAvatarUrl = newAvatar;
+      if (avatarFile) {
+        currentAvatarUrl = URL.createObjectURL(avatarFile);
+      }
+
       if (currentUserType === 'guest') {
         localStorage.setItem('chatme_guest_name', currentDisplayName);
         localStorage.setItem('chatme_guest_avatar', currentAvatarUrl);
-      } else { localStorage.setItem('chatme_verified_avatar', currentAvatarUrl); }
+        localStorage.setItem(`chatme_avatar_${currentDisplayName}`, currentAvatarUrl);
+      } else { 
+        localStorage.setItem('chatme_verified_avatar', currentAvatarUrl); 
+      }
+      
       setupProfileUI(); 
       toggleProfileModal(false);
       initPresenceTracking(); 
