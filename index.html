@@ -1,218 +1,100 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChatME! - Secure Verified Chat</title>
-
+<!DOCTYPE html><html lang="en"><head>  <meta charset="UTF-8">  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>ChatME! - Secure Verified & Guest Chat</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f111a;
-      margin: 0;
-      min-height: 100vh;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #ffffff;
-    }
-
-    .card {
-      background: #181b28;
-      padding: 40px 30px;
-      border-radius: 16px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-      width: min(100%, 480px);
-      text-align: center;
-      border: 1px solid #2a2e43;
-    }
-
-    h2 { margin-bottom: 5px; color: #ec4899; font-size: 28px; }
-    p.subtitle { color: #9ca3af; font-size: 14px; margin-bottom: 25px; }
-
-    .input-group { text-align: left; margin-bottom: 15px; }
-    label { display: block; font-size: 13px; color: #d1d5db; margin-bottom: 5px; }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      background: #232738;
-      border: 1px solid #374151;
-      border-radius: 8px;
-      color: white;
-      font-size: 14px;
-    }
-
+  <style>    * { box-sizing: border-box; }
+    body {      font-family: Arial, sans-serif;      background: #0f111a;      margin: 0;      min-height: 100vh;      padding: 20px;      display: flex;      justify-content: center;      align-items: center;      color: #ffffff;    }
+    .card {      background: #181b28;      padding: 40px 30px;      border-radius: 16px;      box-shadow: 0 8px 30px rgba(0,0,0,0.5);      width: min(100%, 480px);      text-align: center;      border: 1px solid #2a2e43;    }
+    h2 { margin-bottom: 5px; color: #ec4899; font-size: 28px; }    p.subtitle { color: #9ca3af; font-size: 14px; margin-bottom: 25px; }
+    .input-group { text-align: left; margin-bottom: 15px; }    label { display: block; font-size: 13px; color: #d1d5db; margin-bottom: 5px; }
+    input {      width: 100%;      padding: 12px;      background: #232738;      border: 1px solid #374151;      border-radius: 8px;      color: white;      font-size: 14px;    }
     input:focus { border-color: #ec4899; outline: none; }
-
-    button.primary-btn {
-      background: linear-gradient(135deg, #8b5cf6, #ec4899);
-      color: white;
-      border: none;
-      padding: 12px;
-      width: 100%;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 15px;
-      margin-top: 10px;
-      transition: opacity 0.2s;
-    }
-
+    button.primary-btn {      background: linear-gradient(135deg, #8b5cf6, #ec4899);      color: white;      border: none;      padding: 12px;      width: 100%;      border-radius: 8px;      cursor: pointer;      font-weight: bold;      font-size: 15px;      margin-top: 10px;      transition: opacity 0.2s;    }
     button.primary-btn:hover { opacity: 0.9; }
-
-    .switch-text { margin-top: 20px; font-size: 13px; color: #9ca3af; }
-    .switch-text a { color: #38bdf8; text-decoration: none; font-weight: bold; cursor: pointer; }
-    .switch-text a:hover { text-decoration: underline; }
-
+    button.secondary-btn {      background: #374151;      color: white;      border: none;      padding: 12px;      width: 100%;      border-radius: 8px;      cursor: pointer;      font-weight: bold;      font-size: 15px;      margin-top: 10px;      transition: opacity 0.2s;    }
+    button.secondary-btn:hover { background: #4b5563; }
+    .switch-text { margin-top: 20px; font-size: 13px; color: #9ca3af; }    .switch-text a { color: #38bdf8; text-decoration: none; font-weight: bold; cursor: pointer; }    .switch-text a:hover { text-decoration: underline; }
     .hidden { display: none !important; }
-
-    #chat-screen {
-      height: min(550px, calc(100vh - 40px));
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-    }
-
-    .chat-messages {
-      flex: 1;
-      border: 1px solid #374151;
-      border-radius: 8px;
-      padding: 12px;
-      overflow-y: auto;
-      margin-bottom: 12px;
-      background: #13151f;
-    }
-
-    .status {
-      margin-top: 12px;
-      font-size: 13px;
-      color: #fbbf24;
-      min-height: 18px;
-    }
-
-    .setup-note {
-      font-size: 12px;
-      color: #fbbf24;
-      margin-top: 12px;
-      line-height: 1.4;
-    }
-  </style>
-</head>
-
+    #chat-screen {      height: min(550px, calc(100vh - 40px));      display: flex;      flex-direction: column;      text-align: left;      width: min(100%, 600px);    }
+    .chat-messages {      flex: 1;      border: 1px solid #374151;      border-radius: 8px;      padding: 12px;      overflow-y: auto;      margin-bottom: 12px;      background: #13151f;    }
+    .status {      margin-top: 12px;      font-size: 13px;      color: #fbbf24;      min-height: 18px;    }
+    .badge {      display: inline-block;      font-size: 10px;      padding: 2px 6px;      border-radius: 4px;      margin-left: 6px;      font-weight: bold;    }
+    .badge-verified { background: #059669; color: #10b981; background: rgba(16, 185, 129, 0.2); }
+    .badge-guest { background: #d97706; color: #f59e0b; background: rgba(245, 158, 11, 0.2); }
+  </style></head>
 <body>
 
-  <div id="login-screen" class="card">
-    <h2>Login</h2>
+  <div id="login-screen" class="card">    
+    <h2>Login</h2>    
     <p class="subtitle">Welcome back to ChatME!</p>
-
-    <div class="input-group">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="name@example.com">
+    <div class="input-group">      
+      <label>Email</label>      
+      <input type="email" id="login-email" placeholder="name@example.com">    
     </div>
-
-    <div class="input-group">
-      <label>Password</label>
-      <input type="password" id="login-password" placeholder="••••••••">
+    <div class="input-group">      
+      <label>Password</label>      
+      <input type="password" id="login-password" placeholder="••••••••">    
     </div>
-
     <button class="primary-btn" onclick="handleSignIn()">Sign In</button>
-
-    <div class="switch-text">
-      Don't have an account?
-      <a onclick="switchView('register')">Register Here</a>
+    <button class="secondary-btn" onclick="handleGuestLogin()">Continue as Guest (No Register)</button>
+    
+    <div class="switch-text">      
+      Don't have an account? <a onclick="switchView('register')">Register Here</a>    
     </div>
-
-    <div id="login-status" class="status"></div>
+    <div id="login-status" class="status"></div>  
   </div>
 
-  <div id="register-screen" class="card hidden">
-    <h2>Register</h2>
-    <p class="subtitle">Create an account to join ChatME!</p>
-
-    <div class="input-group">
-      <label>Real Email</label>
-      <input type="email" id="reg-email" placeholder="name@example.com">
+  <div id="register-screen" class="card hidden">    
+    <h2>Register</h2>    
+    <p class="subtitle">Create a verified account to join ChatME!</p>
+    <div class="input-group">      
+      <label>Real Email</label>      
+      <input type="email" id="reg-email" placeholder="name@example.com">    
     </div>
-
-    <div class="input-group">
-      <label>Password</label>
-      <input type="password" id="reg-password" placeholder="At least 6 characters">
+    <div class="input-group">      
+      <label>Password</label>      
+      <input type="password" id="reg-password" placeholder="At least 6 characters">    
     </div>
-
     <button class="primary-btn" onclick="handleRegister()">Sign Up</button>
-
-    <div class="switch-text">
-      Already have an account?
-      <a onclick="switchView('login')">Sign In Here</a>
+    <div class="switch-text">      
+      Already have an account? <a onclick="switchView('login')">Sign In Here</a>    
     </div>
-
-    <div id="register-status" class="status"></div>
+    <div id="register-status" class="status"></div>  
   </div>
 
-  <div id="verification-wall" class="card hidden">
-    <h2>Check Your Email ✉️</h2>
-    <p class="subtitle">
-      Verification sent to <b id="verify-email-target" style="color:white;"></b>.
-    </p>
-
-    <p style="font-size:13px; color:#9ca3af; line-height:1.4; margin-bottom:20px;">
-      Click the confirmation link in your email inbox before accessing the chat.
-    </p>
-
-    <button class="primary-btn" onclick="checkVerificationStatus()">
-      I've Verified, Let Me In
-    </button>
-
-    <button class="primary-btn" onclick="resendEmail()" style="background:#374151;">
-      Resend Link
-    </button>
-
-    <button class="primary-btn" onclick="logout()" style="background:#ef4444;">
-      Logout / Back
-    </button>
-
-    <div id="verify-status" class="status"></div>
+  <div id="verification-wall" class="card hidden">    
+    <h2>Check Your Email ✉️</h2>    
+    <p class="subtitle">Verification sent to <b id="verify-email-target" style="color:white;"></b>.</p>
+    <p style="font-size:13px; color:#9ca3af; line-height:1.4; margin-bottom:20px;">      
+      Click the confirmation link in your email inbox before accessing the verified chat.    </p>
+    <button class="primary-btn" onclick="checkVerificationStatus()">I've Verified, Let Me In</button>
+    <button class="primary-btn" onclick="resendEmail()" style="background:#374151;">Resend Link</button>
+    <button class="primary-btn" onclick="logout()" style="background:#ef4444;">Logout / Back</button>
+    <div id="verify-status" class="status"></div>  
   </div>
 
-  <div id="chat-screen" class="card hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #374151; padding-bottom:10px; margin-bottom:10px;">
-      <h3 style="margin:0; color:#ec4899;">ChatME! Room</h3>
-      <button onclick="logout()" style="width:auto; background:#ef4444; border:none; color:white; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">
-        Logout
-      </button>
+  <div id="chat-screen" class="card hidden">    
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #374151; padding-bottom:10px; margin-bottom:10px;">      
+      <div>
+        <h3 style="margin:0; color:#ec4899;">ChatME! Room</h3>
+        <span id="user-identity-display" style="font-size: 11px; color: #9ca3af;"></span>
+      </div>
+      <button onclick="logout()" style="width:auto; background:#ef4444; border:none; color:white; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">        Logout      </button> 
     </div>
-
-    <div class="chat-messages" id="message-list">
-      <p style="color:#9ca3af; text-align:center; font-size:13px; margin-top:40px;">
-        You are verified and securely connected!
-      </p>
-    </div>
-
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="chat-input" placeholder="Type a message..." style="margin:0;">
-      <button class="primary-btn" onclick="sendMessage()" style="width:90px; margin:0; padding:0;">
-        Send
-      </button>
-    </div>
+    <div class="chat-messages" id="message-list">      
+      <p style="color:#9ca3af; text-align:center; font-size:13px; margin-top:40px;">        Connected to the secure chat space!      </p>    </div>
+    <div style="display:flex; gap:8px;">      
+      <input type="text" id="chat-input" placeholder="Type a message..." style="margin:0;">      
+      <button class="primary-btn" onclick="sendMessage()" style="width:90px; margin:0; padding:0;">Send</button>    
+    </div>  
   </div>
 
   <script>
-    // =========================================================
-    // IMPORTANT:
-    // Replace these two values with your real Supabase project
-    // URL and anon/public key.
-    // =========================================================
     const SUPABASE_URL = 'https://zsgcmauofwdjelawlbtz.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_nxNL8AP9xSIJDJN8eHKwhw_F-dZpDZ1';
 
     let supabaseClient = null;
+    let currentUserType = null; // 'verified' or 'guest'
+    let currentUserName = null;
 
     const loginScreen = document.getElementById('login-screen');
     const registerScreen = document.getElementById('register-screen');
@@ -249,44 +131,33 @@
     }
 
     async function initializeApp() {
-      if (!window.supabase) {
-        showStatus('login-status', 'Supabase SDK failed to load. Check your internet connection.', true);
+      if (!window.supabase || !isSupabaseConfigured()) {
+        showStatus('login-status', 'Supabase initialized or check config.', true);
         return;
       }
 
-      if (!isSupabaseConfigured()) {
-        showStatus(
-          'login-status',
-          'Setup required: add your Supabase URL and anon key in the script.',
-          true
-        );
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { detectSessionInUrl: true, flowType: 'pkce', persistSession: true, autoRefreshToken: true }
+      });
+
+      // Check if user is logged in as guest locally
+      const localGuest = localStorage.getItem('chatme_guest_name');
+      if (localGuest) {
+        currentUserType = 'guest';
+        currentUserName = localGuest;
+        setupChatHeader();
+        switchView('chat');
         return;
       }
-
-      supabaseClient = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY,
-        {
-          auth: {
-            detectSessionInUrl: true,
-            flowType: 'pkce',
-            persistSession: true,
-            autoRefreshToken: true
-          }
-        }
-      );
 
       try {
         const { data, error } = await supabaseClient.auth.getUser();
-
-        if (error) {
-          console.warn('Session check:', error.message);
-        }
-
         const user = data?.user;
-
         if (user) {
           if (user.email_confirmed_at) {
+            currentUserType = 'verified';
+            currentUserName = user.email;
+            setupChatHeader();
             switchView('chat');
           } else {
             verifyEmailTarget.textContent = user.email || '';
@@ -295,179 +166,136 @@
         } else {
           switchView('login');
         }
-      } catch (error) {
-        console.error(error);
+      } catch (e) {
         switchView('login');
       }
     }
 
     window.addEventListener('DOMContentLoaded', initializeApp);
 
+    // --- REGISTER & LOGIN LOGIC ---
     async function handleRegister() {
-      if (!supabaseClient) {
-        showStatus('register-status', 'Supabase is not configured yet.', true);
-        return;
-      }
-
       const email = document.getElementById('reg-email').value.trim();
       const password = document.getElementById('reg-password').value;
-
       if (!email || !password) {
-        showStatus('register-status', 'Please complete both email and password fields.', true);
+        showStatus('register-status', 'Complete both fields.', true);
         return;
       }
-
       try {
         const { data, error } = await supabaseClient.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin + window.location.pathname
-          }
+          email, password,
+          options: { emailRedirectTo: window.location.origin + window.location.pathname }
         });
-
         if (error) throw error;
-
         if (data.user) {
           verifyEmailTarget.textContent = email;
-          showStatus('verify-status', 'Account created. Please check your email.');
           switchView('verify');
         }
       } catch (error) {
-        showStatus('register-status', 'Registration error: ' + error.message, true);
+        showStatus('register-status', 'Error: ' + error.message, true);
       }
     }
 
     async function handleSignIn() {
-      if (!supabaseClient) {
-        showStatus('login-status', 'Supabase is not configured yet.', true);
-        return;
-      }
-
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
-
       if (!email || !password) {
-        showStatus('login-status', 'Please enter both email and password.', true);
+        showStatus('login-status', 'Enter email and password.', true);
         return;
       }
-
       try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email,
-          password
-        });
-
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
-
-        const user = data.user;
-
-        if (!user) {
-          throw new Error('No user returned from login.');
-        }
-
-        if (!user.email_confirmed_at) {
-          verifyEmailTarget.textContent = user.email || '';
-          showStatus('verify-status', 'Please verify your email before entering the chat.', true);
+        if (!data.user.email_confirmed_at) {
+          verifyEmailTarget.textContent = data.user.email;
           switchView('verify');
           return;
         }
-
+        currentUserType = 'verified';
+        currentUserName = data.user.email;
+        setupChatHeader();
         switchView('chat');
       } catch (error) {
         showStatus('login-status', 'Login failed: ' + error.message, true);
       }
     }
 
+    // --- GUEST LOGIN LOGIC (Unregistered identification) ---
+    function handleGuestLogin() {
+      const randomId = Math.floor(1000 + Math.random() * 9000);
+      const guestName = `Guest_${randomId}`;
+      
+      localStorage.setItem('chatme_guest_name', guestName);
+      currentUserType = 'guest';
+      currentUserName = guestName;
+      
+      setupChatHeader();
+      switchView('chat');
+    }
+
+    function setupChatHeader() {
+      const display = document.getElementById('user-identity-display');
+      if (currentUserType === 'verified') {
+        display.innerHTML = `Logged in as: <b>${currentUserName}</b> <span class="badge badge-verified">✓ Verified Real User</span>`;
+      } else {
+        display.innerHTML = `Logged in as: <b>${currentUserName}</b> <span class="badge badge-guest">⚠ Unregistered Guest</span>`;
+      }
+    }
+
     async function checkVerificationStatus() {
-      if (!supabaseClient) return;
-
-      try {
-        await supabaseClient.auth.refreshSession();
-
-        const { data, error } = await supabaseClient.auth.getUser();
-
-        if (error || !data.user) {
-          throw error || new Error('Session invalid.');
-        }
-
-        if (data.user.email_confirmed_at) {
-          showStatus('verify-status', 'Email verified successfully!');
-          switchView('chat');
-        } else {
-          showStatus(
-            'verify-status',
-            'Not verified yet. Please click the confirmation link in your email.',
-            true
-          );
-        }
-      } catch (error) {
-        showStatus('verify-status', 'Please log in again: ' + error.message, true);
+      await supabaseClient.auth.refreshSession();
+      const { data } = await supabaseClient.auth.getUser();
+      if (data?.user?.email_confirmed_at) {
+        currentUserType = 'verified';
+        currentUserName = data.user.email;
+        setupChatHeader();
+        switchView('chat');
+      } else {
+        showStatus('verify-status', 'Not verified yet.', true);
       }
     }
 
     async function resendEmail() {
-      if (!supabaseClient) return;
-
-      try {
-        const { data } = await supabaseClient.auth.getUser();
-        const user = data?.user;
-
-        if (!user?.email) {
-          throw new Error('No active user found.');
-        }
-
-        const { error } = await supabaseClient.auth.resend({
-          type: 'signup',
-          email: user.email,
-          options: {
-            emailRedirectTo: window.location.origin + window.location.pathname
-          }
-        });
-
-        if (error) throw error;
-
-        showStatus('verify-status', 'Verification link resent. Check your inbox.');
-      } catch (error) {
-        showStatus('verify-status', 'Could not resend email: ' + error.message, true);
+      const { data } = await supabaseClient.auth.getUser();
+      if (data?.user?.email) {
+        await supabaseClient.auth.resend({ type: 'signup', email: data.user.email });
+        showStatus('verify-status', 'Verification link resent!');
       }
     }
 
     async function logout() {
-      if (supabaseClient) {
-        try {
-          await supabaseClient.auth.signOut();
-        } catch (error) {
-          console.warn('Logout error:', error);
-        }
-      }
-
+      if (supabaseClient) await supabaseClient.auth.signOut();
+      localStorage.removeItem('chatme_guest_name');
+      currentUserType = null;
+      currentUserName = null;
+      
       document.getElementById('login-email').value = '';
       document.getElementById('login-password').value = '';
-      document.getElementById('reg-email').value = '';
-      document.getElementById('reg-password').value = '';
-
       switchView('login');
     }
 
+    // --- CHAT & IDENTIFICATION LOGIC ---
     function sendMessage() {
       const input = document.getElementById('chat-input');
       const message = input.value.trim();
-
       if (!message) return;
 
       const list = document.getElementById('message-list');
       const p = document.createElement('p');
-
       p.style.margin = '8px 0';
 
-      const name = document.createElement('b');
-      name.textContent = 'You: ';
-      name.style.color = '#ec4899';
+      const nameSpan = document.createElement('b');
+      nameSpan.textContent = currentUserName + ': ';
+
+      // Give distinct styling colors to identify real vs guest handles in chat
+      if (currentUserType === 'verified') {
+        nameSpan.style.color = '#10b981'; // Green for verified real users
+      } else {
+        nameSpan.style.color = '#f59e0b'; // Amber for guests
+      }
 
       const text = document.createTextNode(message);
-
-      p.appendChild(name);
+      p.appendChild(nameSpan);
       p.appendChild(text);
 
       list.appendChild(p);
@@ -476,11 +304,7 @@
     }
 
     document.getElementById('chat-input').addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') {
-        sendMessage();
-      }
+      if (event.key === 'Enter') sendMessage();
     });
   </script>
-
-</body>
-</html>
+</body></html>
