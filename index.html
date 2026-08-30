@@ -4,226 +4,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChatME! - Rooms & Personal Chats</title>
+  <title>ChatME - Social & Stories Edition</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(circle at top, #16192b, #0c0e17);
+      background: #f1f5f9;
+      background-image: radial-gradient(circle at 50% 0%, #e2e8f0 0%, #f1f5f9 75%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      color: #ffffff;
+      color: #1e293b;
       padding: 10px;
     }
 
     .card {
-      background: #181b28;
+      background: #ffffff;
       padding: 35px 30px;
-      border-radius: 20px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-      width: min(100%, 440px);
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      width: min(100%, 420px);
       text-align: center;
-      border: 1px solid #2a2e43;
+      border: 1px solid #e2e8f0;
     }
 
-    h2 { margin-bottom: 8px; color: #f472b6; font-size: 26px; font-weight: 700; }
-    p.subtitle { color: #9ca3af; font-size: 13px; margin-bottom: 24px; }
+    h2 { margin-bottom: 6px; color: #0284c7; font-size: 24px; font-weight: 600; }
+    p.subtitle { color: #64748b; font-size: 13px; margin-bottom: 24px; }
 
     .input-group { text-align: left; margin-bottom: 16px; }
-    label { display: block; font-size: 12px; color: #d1d5db; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+    label { display: block; font-size: 11px; color: #475569; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
     
     .input-wrapper { position: relative; }
     .input-wrapper svg {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 18px;
-      height: 18px;
-      fill: #6b7280;
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; fill: #94a3b8;
     }
     input {
-      width: 100%;
-      padding: 12px 12px 12px 44px;
-      background: #12141f;
-      border: 1px solid #2f354a;
-      border-radius: 10px;
-      color: white;
-      font-size: 14px;
-      transition: all 0.2s;
+      width: 100%; padding: 11px 12px 11px 40px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; color: #1e293b; font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s;
     }
-    input:focus { border-color: #ec4899; outline: none; box-shadow: 0 0 0 3px rgba(236,72,153,0.15); }
+    input:focus { border-color: #0284c7; outline: none; box-shadow: 0 0 0 3px rgba(2,132,199,0.15); }
 
     button.primary-btn {
-      background: linear-gradient(135deg, #9333ea, #ec4899);
-      color: white;
-      border: none;
-      padding: 12px;
-      width: 100%;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 15px;
-      margin-top: 10px;
-      transition: transform 0.1s, opacity 0.2s;
+      background: #0284c7; color: white; border: none; padding: 11px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; margin-top: 10px; transition: background 0.2s;
     }
-    button.primary-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+    button.primary-btn:hover { background: #0369a1; }
     
     button.secondary-btn {
-      background: #232738;
-      color: #d1d5db;
-      border: 1px solid #374151;
-      padding: 12px;
-      width: 100%;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      margin-top: 10px;
-      transition: background 0.2s;
+      background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 11px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; margin-top: 10px; transition: background 0.2s;
     }
-    button.secondary-btn:hover { background: #2d3348; color: white; }
+    button.secondary-btn:hover { background: #e2e8f0; color: #0f172a; }
 
-    .switch-text { margin-top: 20px; font-size: 13px; color: #9ca3af; }
-    .switch-text a { color: #38bdf8; text-decoration: none; font-weight: bold; cursor: pointer; }
+    .switch-text { margin-top: 20px; font-size: 13px; color: #64748b; }
+    .switch-text a { color: #0284c7; text-decoration: none; font-weight: 600; cursor: pointer; }
     .switch-text a:hover { text-decoration: underline; }
 
     .hidden { display: none !important; }
-    .status { margin-top: 12px; font-size: 13px; color: #fbbf24; min-height: 18px; }
+    .status { margin-top: 12px; font-size: 13px; color: #d97706; min-height: 18px; }
 
-    /* TELEGRAM APP UI */
+    /* CHAT UI & STORIES */
     #chat-screen {
-      width: 1050px;
-      height: 650px;
-      background: #13151f;
-      border-radius: 20px;
-      border: 1px solid #2a2e43;
-      display: flex;
-      overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+      width: 1100px; height: 700px; background: #ffffff; border-radius: 14px; border: 1px solid #cbd5e1; display: flex; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.08);
     }
 
     .telegram-sidebar {
-      width: 300px;
-      background: #181b28;
-      border-right: 1px solid #232738;
-      display: flex;
-      flex-direction: column;
+      width: 320px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;
     }
 
     .sidebar-header {
-      padding: 20px;
-      border-bottom: 1px solid #232738;
+      padding: 15px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* STORIES STRIP */
+    .stories-strip {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e2e8f0;
       display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      background: #ffffff;
+    }
+    .stories-strip::-webkit-scrollbar { height: 4px; }
+    .stories-strip::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    .story-bubble-item {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+      width: 54px;
     }
+    .story-ring {
+      width: 50px; height: 50px; border-radius: 50%; padding: 2px;
+      background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s;
+    }
+    .story-ring:hover { transform: scale(1.05); }
+    .story-ring.add-story { background: #e2e8f0; border: 2px dashed #94a3b8; }
+    .story-avatar {
+      width: 100%; height: 100%; border-radius: 50%; background: #fff; object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #334155; overflow: hidden;
+    }
+    .story-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .story-name { font-size: 10px; color: #475569; margin-top: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
-    .sidebar-section-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #6b7280;
-      padding: 15px 15px 5px 15px;
-      font-weight: bold;
+    .user-profile-preview {
+      display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.2s;
     }
+    .user-profile-preview:hover { background: #f1f5f9; }
 
-    .sidebar-channels {
-      padding: 5px 10px;
-      overflow-y: auto;
-      flex: 1;
+    .avatar-circle {
+      width: 36px; height: 36px; border-radius: 50%; background: #cbd5e1; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #334155; border: 1px solid #94a3b8; flex-shrink: 0;
     }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+    .sidebar-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; padding: 15px 15px 5px 15px; font-weight: bold; }
+    .sidebar-channels { padding: 5px 10px; overflow-y: auto; flex: 1; }
 
     .channel-item {
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: #232738;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
-      transition: background 0.2s;
+      padding: 10px 12px; border-radius: 6px; background: transparent; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; color: #475569; transition: background 0.2s, color 0.2s;
     }
-    .channel-item:hover, .channel-item.active { background: #2f354a; color: #ec4899; }
+    .channel-item:hover { background: #f1f5f9; color: #1e293b; }
+    .channel-item.active { background: #0284c7; color: white; }
 
-    .telegram-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #0f111a;
-    }
+    .telegram-main { flex: 1; display: flex; flex-direction: column; background: #ffffff; }
+    .chat-topbar { padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
 
-    .chat-topbar {
-      padding: 15px 20px;
-      background: #181b28;
-      border-bottom: 1px solid #232738;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .chat-messages {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    /* MESSAGE CONTAINER & HOVER CONTROLS */
+    .message-container { display: flex; flex-direction: column; position: relative; max-width: 75%; }
+    .message-container.incoming { align-self: flex-start; }
+    .message-container.outgoing { align-self: flex-end; align-items: flex-end; }
 
     .message-bubble {
-      max-width: 70%;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 14px;
-      line-height: 1.4;
-      word-break: break-word;
+      padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.4; word-break: break-word; display: flex; gap: 10px; align-items: flex-start; position: relative;
     }
-    .message-bubble.incoming { background: #232738; align-self: flex-start; border-top-left-radius: 2px; }
-    .message-bubble.outgoing { background: linear-gradient(135deg, #9333ea, #ec4899); align-self: flex-end; border-top-right-radius: 2px; }
+    .message-container.incoming .message-bubble { background: #f1f5f9; color: #1e293b; border-top-left-radius: 2px; }
+    .message-container.outgoing .message-bubble { background: #0284c7; color: white; border-top-right-radius: 2px; flex-direction: row-reverse; }
 
-    .chat-input-bar {
-      padding: 15px 20px;
-      background: #181b28;
-      border-top: 1px solid #232738;
-      display: flex;
-      gap: 10px;
-      align-items: center;
+    .message-bubble img, .message-bubble video {
+      max-width: 240px; max-height: 160px; border-radius: 8px; margin-top: 6px; object-fit: cover; display: block;
     }
-    .chat-input-bar input { padding: 12px 16px; border-radius: 25px; }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
+    .reply-context-box {
+      background: rgba(0,0,0,0.06); border-left: 3px solid #0284c7; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 6px; opacity: 0.85;
     }
-    .badge-verified { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-    .badge-guest { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+    .message-container.outgoing .reply-context-box { background: rgba(255,255,255,0.2); border-left-color: #ffffff; }
+
+    .message-actions-hover {
+      position: absolute; top: -14px; right: 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: none; gap: 2px; padding: 2px 6px; z-index: 10;
+    }
+    .message-container:hover .message-actions-hover { display: flex; }
+
+    .hover-btn { background: transparent; border: none; cursor: pointer; font-size: 13px; padding: 4px; border-radius: 50%; transition: background 0.15s; }
+    .hover-btn:hover { background: #f1f5f9; }
+
+    .reactions-row { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+    .reaction-pill {
+      background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2px 6px; font-size: 11px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;
+    }
+    .reaction-pill:hover { background: #e2e8f0; }
+
+    .active-reply-banner {
+      background: #f1f5f9; border-left: 3px solid #0284c7; padding: 6px 12px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0;
+    }
+
+    .chat-input-bar { padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; align-items: center; }
+    .chat-input-bar input[type="text"] { padding: 11px 16px; border-radius: 20px; margin: 0; flex: 1; }
+
+    .action-icon-btn {
+      background: transparent; border: none; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+    }
+    .action-icon-btn:hover { background: #e2e8f0; }
+    .action-icon-btn svg { width: 18px; height: 18px; fill: #64748b; }
+    .action-icon-btn.recording { background: #fee2e2; }
+    .action-icon-btn.recording svg { fill: #ef4444; animation: pulse 1s infinite; }
+
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+    .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+    .badge-verified { background: rgba(16, 185, 129, 0.15); color: #047857; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-guest { background: rgba(245, 158, 11, 0.15); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 100;
+    }
   </style>
 </head>
 <body>
 
   <!-- LOGIN SCREEN -->
   <div id="login-screen" class="card">
-    <h2>⚡ ChatME!</h2>
-    <p class="subtitle">Secure Rooms & Direct Messaging</p>
+    <h2>ChatME</h2>
+    <p class="subtitle">Social Collaboration & Stories Suite</p>
     
     <div class="input-group">
-      <label>Email Address</label>
+      <label>Work Email</label>
       <div class="input-wrapper">
         <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-        <input type="email" id="login-email" placeholder="name@example.com">
+        <input type="email" id="login-email" placeholder="name@company.com">
       </div>
     </div>
 
@@ -235,8 +215,8 @@
       </div>
     </div>
 
-    <button class="primary-btn" onclick="handleSignIn()">Sign In Securely</button>
-    <button class="secondary-btn" onclick="handleGuestLogin()">🚀 Continue as Instant Guest</button>
+    <button class="primary-btn" onclick="handleSignIn()">Sign In</button>
+    <button class="secondary-btn" onclick="handleGuestLogin()">Continue as Workspace Guest</button>
     
     <div class="switch-text">
       New user? <a onclick="switchView('register')">Create an Account</a>
@@ -247,25 +227,25 @@
   <!-- REGISTER SCREEN -->
   <div id="register-screen" class="card hidden">
     <h2>Create Account</h2>
-    <p class="subtitle">Join the secure network</p>
+    <p class="subtitle">Join the network</p>
     
     <div class="input-group">
-      <label>Real Email Address</label>
+      <label>Work Email</label>
       <div class="input-wrapper">
         <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-        <input type="email" id="reg-email" placeholder="name@example.com">
+        <input type="email" id="reg-email" placeholder="name@company.com">
       </div>
     </div>
 
     <div class="input-group">
-      <label>Secure Password</label>
+      <label>Password</label>
       <div class="input-wrapper">
         <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
         <input type="password" id="reg-password" placeholder="At least 6 characters">
       </div>
     </div>
 
-    <button class="primary-btn" onclick="handleRegister()">Sign Up & Verify</button>
+    <button class="primary-btn" onclick="handleRegister()">Register Account</button>
     <div class="switch-text">
       Already registered? <a onclick="switchView('login')">Sign In</a>
     </div>
@@ -275,40 +255,99 @@
   <!-- EMAIL VERIFICATION WALL -->
   <div id="verification-wall" class="card hidden">
     <h2>Check Your Email ✉️</h2>
-    <p class="subtitle">Confirmation link sent to <b id="verify-email-target" style="color:white;"></b></p>
+    <p class="subtitle">Confirmation link sent to <b id="verify-email-target" style="color:#1e293b;"></b></p>
     <button class="primary-btn" onclick="checkVerificationStatus()">I Have Verified My Email</button>
-    <button class="secondary-btn" onclick="resendEmail()">Resend Confirmation Link</button>
+    <button class="secondary-btn" onclick="resendEmail()">Resend Link</button>
     <button class="secondary-btn" onclick="logout()" style="border-color:#ef4444; color:#ef4444;">Back to Login</button>
     <div id="verify-status" class="status"></div>
   </div>
 
-  <!-- TELEGRAM-STYLE CHAT INTERFACE WITH ROOMS & DMs -->
+  <!-- PROFILE MODAL -->
+  <div id="profile-modal" class="card modal-overlay hidden">
+    <div style="background:#ffffff; padding:30px; border-radius:12px; border:1px solid #cbd5e1; width:100%; max-width:400px; text-align:center;">
+      <h2>Edit Profile</h2>
+      <p class="subtitle">Update your display name and avatar picture</p>
+      <div class="input-group">
+        <label>Display Name</label>
+        <input type="text" id="edit-display-name" placeholder="Enter display name...">
+      </div>
+      <div class="input-group">
+        <label>Avatar Image URL</label>
+        <input type="text" id="edit-avatar-url" placeholder="https://example.com/avatar.jpg">
+      </div>
+      <button class="primary-btn" onclick="saveProfileChanges()">Save Changes</button>
+      <button class="secondary-btn" onclick="toggleProfileModal(false)">Cancel</button>
+    </div>
+  </div>
+
+  <!-- STORY VIEWER MODAL -->
+  <div id="story-viewer-modal" class="modal-overlay hidden" onclick="closeStoryViewer()">
+    <div style="background:#1e293b; color:#fff; padding:20px; border-radius:12px; width:320px; height:450px; display:flex; flex-direction:column; justify-content:space-between; position:relative; text-align:center;" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+        <span id="viewer-story-author" style="font-weight:bold;">Author</span>
+        <button onclick="closeStoryViewer()" style="background:transparent; border:none; color:#fff; font-size:16px; cursor:pointer;">✕</button>
+      </div>
+      <div id="viewer-story-content" style="flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; margin:10px 0;">
+        <!-- Story image/video content -->
+      </div>
+      <div style="font-size:11px; color:#94a3b8;">Expires in 24 hours</div>
+    </div>
+  </div>
+
+  <!-- ADD STORY MODAL (Easy File Picker) -->
+  <div id="add-story-modal" class="card modal-overlay hidden">
+    <div style="background:#ffffff; padding:30px; border-radius:12px; border:1px solid #cbd5e1; width:100%; max-width:400px; text-align:center;">
+      <h2>Post a Story 📸</h2>
+      <p class="subtitle">Select a photo or video from your device</p>
+      <div class="input-group">
+        <label>Choose File</label>
+        <input type="file" id="story-file-input" accept="image/*,video/*" style="padding: 8px;">
+      </div>
+      <button class="primary-btn" onclick="publishStoryFromFile()">Publish Story</button>
+      <button class="secondary-btn" onclick="toggleAddStoryModal(false)">Cancel</button>
+    </div>
+  </div>
+
+  <!-- CHAT INTERFACE WITH STORIES -->
   <div id="chat-screen" class="hidden">
     <div class="telegram-sidebar">
       <div class="sidebar-header">
-        <svg style="width:24px;height:24px;fill:#ec4899;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-        <h3 style="font-size:16px; color:white;">ChatME! Network</h3>
+        <div class="user-profile-preview" onclick="toggleProfileModal(true)" title="Click to edit profile">
+          <div class="avatar-circle" id="sidebar-avatar-container">U</div>
+          <div style="text-align:left; overflow:hidden;">
+            <div id="sidebar-username" style="font-size:12px; font-weight:600; color:#1e293b; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">User</div>
+            <div id="sidebar-badge-container"></div>
+          </div>
+        </div>
+        <button onclick="logout()" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:12px; font-weight:500;" title="Logout">Exit</button>
       </div>
       
-      <div class="sidebar-channels">
-        <div class="sidebar-section-title">Rooms (Public)</div>
-        <div class="channel-item active" onclick="selectChat('room', 'General Room', this)">
-          <svg style="width:16px;height:16px;fill:#38bdf8;" viewBox="0 0 24 24"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg>
-          General Room
+      <!-- STORIES STRIP BAR -->
+      <div class="stories-strip" id="stories-strip-container">
+        <!-- Add Story Button -->
+        <div class="story-bubble-item" onclick="toggleAddStoryModal(true)">
+          <div class="story-ring add-story">
+            <div class="story-avatar" style="font-size:20px; color:#64748b;">+</div>
+          </div>
+          <div class="story-name">Add Story</div>
         </div>
-        <div class="channel-item" onclick="selectChat('room', 'Tech Discussion', this)">
-          <svg style="width:16px;height:16px;fill:#38bdf8;" viewBox="0 0 24 24"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg>
-          Tech Discussion
+      </div>
+
+      <div class="sidebar-channels">
+        <div class="sidebar-section-title">Channels</div>
+        <div class="channel-item active" onclick="selectChat('room', 'ChatME\'s Room', this)">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg>
+          ChatME's Room
+        </div>
+        <div class="channel-item" onclick="selectChat('room', 'Viral Feed', this)">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 m-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93 m6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          Viral Feed
         </div>
 
-        <div class="sidebar-section-title">Personal Chats (DM)</div>
-        <div class="channel-item" onclick="selectChat('dm', 'Alice (Verified)', this)">
-          <svg style="width:16px;height:16px;fill:#34d399;" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          Alice (Verified)
-        </div>
-        <div class="channel-item" onclick="selectChat('dm', 'Bob (Guest)', this)">
-          <svg style="width:16px;height:16px;fill:#fbbf24;" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          Bob (Guest)
+        <div class="sidebar-section-title">Direct Messages</div>
+        <div class="channel-item" onclick="selectChat('dm', 'Director Sarah', this)">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          Director Sarah
         </div>
       </div>
     </div>
@@ -316,19 +355,34 @@
     <div class="telegram-main">
       <div class="chat-topbar">
         <div>
-          <h4 id="current-chat-title" style="font-size:15px; color:white; margin-bottom:2px;">General Room</h4>
-          <span id="user-identity-display" style="font-size:11px;"></span>
+          <h4 id="current-chat-title" style="font-size:14px; color:#1e293b; font-weight:600; margin-bottom:2px;">ChatME's Room</h4>
+          <span style="font-size:11px; color:#64748b;">Social Workspace</span>
         </div>
-        <button onclick="logout()" style="background:#232738; border:1px solid #374151; color:#f87171; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600;">Logout</button>
       </div>
 
       <div class="chat-messages" id="message-list">
-        <div style="text-align:center; color:#6b7280; font-size:12px; margin-top:20px;">Secure session loaded. Start chatting below!</div>
+        <div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">Welcome to ChatME's Room! Post stories, upload files, react, and reply.</div>
+      </div>
+
+      <div id="reply-banner" class="active-reply-banner hidden">
+        <div>Replying to <b id="reply-target-author">User</b>: <span id="reply-target-snippet" style="color:#475569;">...</span></div>
+        <button onclick="cancelReply()" style="background:transparent; border:none; cursor:pointer; font-weight:bold; color:#64748b;">✕</button>
       </div>
 
       <div class="chat-input-bar">
-        <input type="text" id="chat-input" placeholder="Type a message..." style="margin:0;">
-        <button class="primary-btn" onclick="sendMessage()" style="width:100px; margin:0; padding:12px;">Send</button>
+        <input type="file" id="media-file-input" style="display:none;" accept="image/*,video/*,audio/*" onchange="handleMediaUpload(event)">
+        
+        <button class="action-icon-btn" onclick="document.getElementById('media-file-input').click()" title="Attach Video/Image">
+          <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.1.9 2 2 2s2-.9 2-2V5c0-2.21-1.79-4-4-4S6 2.79 6 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+        </button>
+
+        <button class="action-icon-btn" id="mic-btn" onclick="toggleVoiceRecording()" title="Record Voice Note">
+          <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.39-.9.89 0 2.72-2.25 4.93-4.97 4.93-2.72 0-4.93-2.21-4.93-4.93 0-.5-.41-.89-.9-.89s-.9.39-.9.89c0 3.24 2.4 5.92 5.53 6.35V20h2v-2.76c3.13-.43 5.53-3.11 5.53-6.35 0-.5-.41-.89-.9-.89z"/></svg>
+        </button>
+
+        <input type="text" id="chat-input" placeholder="Type message or broadcast to network...">
+        
+        <button class="primary-btn" onclick="sendMessage()" style="width:80px; margin:0; padding:10px;">Send</button>
       </div>
     </div>
   </div>
@@ -339,9 +393,19 @@
 
     let supabaseClient = null;
     let currentUserType = null; 
-    let currentUserName = null;
+    let currentDisplayName = null;
+    let currentAvatarUrl = null;
     let activeChatType = 'room';
-    let activeChatName = 'General Room';
+    let activeChatName = "ChatME's Room";
+
+    let storiesList = [
+      { author: 'Director Sarah', avatar: '', media: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400', isVideo: false }
+    ];
+
+    let replyingToData = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
 
     const loginScreen = document.getElementById('login-screen');
     const registerScreen = document.getElementById('register-screen');
@@ -351,10 +415,7 @@
 
     function showStatus(id, message, isError = false) {
       const el = document.getElementById(id);
-      if (el) {
-        el.textContent = message;
-        el.style.color = isError ? '#f87171' : '#34d399';
-      }
+      if (el) { el.textContent = message; el.style.color = isError ? '#ef4444' : '#047857'; }
     }
 
     function switchView(v) {
@@ -362,44 +423,39 @@
       registerScreen.classList.add('hidden');
       verificationWall.classList.add('hidden');
       chatScreen.classList.add('hidden');
-
       if (v === 'login') loginScreen.classList.remove('hidden');
       if (v === 'register') registerScreen.classList.remove('hidden');
       if (v === 'verify') verificationWall.classList.remove('hidden');
-      if (v === 'chat') chatScreen.classList.remove('hidden');
+      if (v === 'chat') { chatScreen.classList.remove('hidden'); renderStories(); }
     }
 
     async function initializeApp() {
       if (!window.supabase) return;
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
       const localGuest = localStorage.getItem('chatme_guest_name');
       if (localGuest) {
         currentUserType = 'guest';
-        currentUserName = localGuest;
-        setupChatHeader();
+        currentDisplayName = localGuest;
+        currentAvatarUrl = localStorage.getItem('chatme_guest_avatar') || '';
+        setupProfileUI();
         switchView('chat');
         return;
       }
-
       try {
         const { data } = await supabaseClient.auth.getUser();
         if (data?.user) {
           if (data.user.email_confirmed_at) {
             currentUserType = 'verified';
-            currentUserName = data.user.email;
-            setupChatHeader();
+            currentDisplayName = data.user.email.split('@')[0];
+            currentAvatarUrl = localStorage.getItem('chatme_verified_avatar') || '';
+            setupProfileUI();
             switchView('chat');
           } else {
             verifyEmailTarget.textContent = data.user.email;
             switchView('verify');
           }
-        } else {
-          switchView('login');
-        }
-      } catch {
-        switchView('login');
-      }
+        } else { switchView('login'); }
+      } catch { switchView('login'); }
     }
 
     window.addEventListener('DOMContentLoaded', initializeApp);
@@ -408,130 +464,308 @@
       const email = document.getElementById('reg-email').value.trim();
       const password = document.getElementById('reg-password').value;
       if (!email || !password) return showStatus('register-status', 'Fill in all fields.', true);
-
       try {
-        const { data, error } = await supabaseClient.auth.signUp({
-          email, password,
-          options: { emailRedirectTo: window.location.origin + window.location.pathname }
-        });
+        const { error } = await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + window.location.pathname } });
         if (error) throw error;
         verifyEmailTarget.textContent = email;
         switchView('verify');
-      } catch (e) {
-        showStatus('register-status', e.message, true);
-      }
+      } catch (e) { showStatus('register-status', e.message, true); }
     }
 
     async function handleSignIn() {
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
       if (!email || !password) return showStatus('login-status', 'Fill in credentials.', true);
-
       try {
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        if (!data.user.email_confirmed_at) {
-          verifyEmailTarget.textContent = data.user.email;
-          switchView('verify');
-          return;
-        }
+        if (!data.user.email_confirmed_at) { verifyEmailTarget.textContent = data.user.email; switchView('verify'); return; }
         currentUserType = 'verified';
-        currentUserName = data.user.email;
-        setupChatHeader();
+        currentDisplayName = data.user.email.split('@')[0];
+        setupProfileUI();
         switchView('chat');
-      } catch (e) {
-        showStatus('login-status', e.message, true);
-      }
+      } catch (e) { showStatus('login-status', e.message, true); }
     }
 
     function handleGuestLogin() {
       const rand = Math.floor(1000 + Math.random() * 9000);
       const guestName = `Guest_${rand}`;
       localStorage.setItem('chatme_guest_name', guestName);
-      currentUserType = 'guest';
-      currentUserName = guestName;
-      setupChatHeader();
-      switchView('chat');
+      currentUserType = 'guest'; currentDisplayName = guestName; currentAvatarUrl = '';
+      setupProfileUI(); switchView('chat');
     }
 
-    function setupChatHeader() {
-      const display = document.getElementById('user-identity-display');
+    function setupProfileUI() {
+      document.getElementById('sidebar-username').textContent = currentDisplayName;
+      const badgeContainer = document.getElementById('sidebar-badge-container');
       if (currentUserType === 'verified') {
-        display.innerHTML = `Your Identity: <b>${currentUserName}</b> <span class="badge badge-verified">✓ Real Verified</span>`;
+        badgeContainer.innerHTML = `<span class="badge badge-verified">✓ Verified</span>`;
       } else {
-        display.innerHTML = `Your Identity: <b>${currentUserName}</b> <span class="badge badge-guest">⚠ Unregistered Guest</span>`;
+        badgeContainer.innerHTML = `<span class="badge badge-guest">⚠ Guest</span>`;
+      }
+      const avatarContainer = document.getElementById('sidebar-avatar-container');
+      if (currentAvatarUrl) { avatarContainer.innerHTML = `<img src="${currentAvatarUrl}" alt="Avatar">`; }
+      else { avatarContainer.textContent = currentDisplayName.charAt(0).toUpperCase(); }
+    }
+
+    function toggleProfileModal(show) {
+      const modal = document.getElementById('profile-modal');
+      if (show) {
+        document.getElementById('edit-display-name').value = currentDisplayName;
+        document.getElementById('edit-avatar-url').value = currentAvatarUrl;
+        modal.classList.remove('hidden');
+      } else { modal.classList.add('hidden'); }
+    }
+
+    function saveProfileChanges() {
+      const newName = document.getElementById('edit-display-name').value.trim();
+      const newAvatar = document.getElementById('edit-avatar-url').value.trim();
+      if (newName) currentDisplayName = newName;
+      currentAvatarUrl = newAvatar;
+      if (currentUserType === 'guest') {
+        localStorage.setItem('chatme_guest_name', currentDisplayName);
+        localStorage.setItem('chatme_guest_avatar', currentAvatarUrl);
+      } else { localStorage.setItem('chatme_verified_avatar', currentAvatarUrl); }
+      setupProfileUI(); toggleProfileModal(false);
+    }
+
+    // STORY SYSTEM LOGIC
+    function renderStories() {
+      const strip = document.getElementById('stories-strip-container');
+      let html = `
+        <div class="story-bubble-item" onclick="toggleAddStoryModal(true)">
+          <div class="story-ring add-story">
+            <div class="story-avatar" style="font-size:20px; color:#64748b;">+</div>
+          </div>
+          <div class="story-name">Add Story</div>
+        </div>
+      `;
+      storiesList.forEach((s, index) => {
+        html += `
+          <div class="story-bubble-item" onclick="viewStory(${index})">
+            <div class="story-ring">
+              <div class="story-avatar">${s.avatar ? `<img src="${s.avatar}">` : s.author.charAt(0)}</div>
+            </div>
+            <div class="story-name">${s.author}</div>
+          </div>
+        `;
+      });
+      strip.innerHTML = html;
+    }
+
+    function toggleAddStoryModal(show) {
+      const modal = document.getElementById('add-story-modal');
+      if (show) modal.classList.remove('hidden');
+      else {
+        modal.classList.add('hidden');
+        document.getElementById('story-file-input').value = '';
       }
     }
 
-    function selectChat(type, name, element) {
-      activeChatType = type;
-      activeChatName = name;
+    function publishStoryFromFile() {
+      const fileInput = document.getElementById('story-file-input');
+      const file = fileInput.files[0];
+      if (!file) return alert('Please select a picture or video file first.');
       
-      // Update sidebar active highlights
+      const fileURL = URL.createObjectURL(file);
+      const isVideo = file.type.startsWith('video/');
+
+      storiesList.unshift({ author: currentDisplayName, avatar: currentAvatarUrl, media: fileURL, isVideo: isVideo });
+      toggleAddStoryModal(false);
+      renderStories();
+    }
+
+    function viewStory(index) {
+      const story = storiesList[index];
+      document.getElementById('viewer-story-author').textContent = story.author;
+      const contentContainer = document.getElementById('viewer-story-content');
+      
+      if (story.isVideo) {
+        contentContainer.innerHTML = `<video src="${story.media}" controls autoplay style="max-width:100%; max-height:350px; border-radius:8px; object-fit:contain;"></video>`;
+      } else {
+        contentContainer.innerHTML = `<img src="${story.media}" style="max-width:100%; max-height:350px; border-radius:8px; object-fit:contain;">`;
+      }
+      document.getElementById('story-viewer-modal').classList.remove('hidden');
+    }
+
+    function closeStoryViewer() {
+      document.getElementById('story-viewer-modal').classList.add('hidden');
+    }
+
+    function selectChat(type, name, element) {
+      activeChatType = type; activeChatName = name;
       document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
       element.classList.add('active');
-
-      // Update top bar chat title
-      document.getElementById('current-chat-title').textContent = (type === 'room' ? '📢 Room: ' : '💬 Direct Message: ') + name;
-
-      // Clear/Reset message view header for demo purposes
-      const list = document.getElementById('message-list');
-      list.innerHTML = `<div style="text-align:center; color:#6b7280; font-size:12px; margin-top:20px;">Switched to ${name} (${type === 'room' ? 'Public Room' : 'Private Chat'})</div>`;
+      document.getElementById('current-chat-title').textContent = name;
+      document.getElementById('message-list').innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">Switched to ${name}</div>`;
     }
 
     async function checkVerificationStatus() {
       await supabaseClient.auth.refreshSession();
       const { data } = await supabaseClient.auth.getUser();
-      if (data?.user?.email_confirmed_at) {
-        currentUserType = 'verified';
-        currentUserName = data.user.email;
-        setupChatHeader();
-        switchView('chat');
-      } else {
-        showStatus('verify-status', 'Email not verified yet.', true);
-      }
+      if (data?.user?.email_confirmed_at) { currentUserType = 'verified'; currentDisplayName = data.user.email.split('@')[0]; setupProfileUI(); switchView('chat'); }
+      else { showStatus('verify-status', 'Email not verified yet.', true); }
     }
 
     async function resendEmail() {
       const { data } = await supabaseClient.auth.getUser();
-      if (data?.user?.email) {
-        await supabaseClient.auth.resend({ type: 'signup', email: data.user.email });
-        showStatus('verify-status', 'Link resent successfully!');
-      }
+      if (data?.user?.email) { await supabaseClient.auth.resend({ type: 'signup', email: data.user.email }); showStatus('verify-status', 'Link resent successfully!'); }
     }
 
     async function logout() {
       if (supabaseClient) await supabaseClient.auth.signOut();
-      localStorage.removeItem('chatme_guest_name');
-      currentUserType = null;
-      currentUserName = null;
-      switchView('login');
+      localStorage.removeItem('chatme_guest_name'); localStorage.removeItem('chatme_guest_avatar');
+      currentUserType = null; currentDisplayName = null; switchView('login');
+    }
+
+    function triggerReply(author, textSnippet) {
+      replyingToData = { author, text: textSnippet };
+      document.getElementById('reply-target-author').textContent = author;
+      document.getElementById('reply-target-snippet').textContent = textSnippet.length > 30 ? textSnippet.substring(0, 30) + '...' : textSnippet;
+      document.getElementById('reply-banner').classList.remove('hidden');
+      document.getElementById('chat-input').focus();
+    }
+
+    function cancelReply() {
+      replyingToData = null;
+      document.getElementById('reply-banner').classList.add('hidden');
+    }
+
+    function addReaction(messageWrapper, emoji) {
+      let reactionsRow = messageWrapper.querySelector('.reactions-row');
+      if (!reactionsRow) {
+        reactionsRow = document.createElement('div');
+        reactionsRow.className = 'reactions-row';
+        messageWrapper.querySelector('.message-bubble').appendChild(reactionsRow);
+      }
+      let pill = Array.from(reactionsRow.children).find(el => el.dataset.emoji === emoji);
+      if (pill) {
+        let countEl = pill.querySelector('.count');
+        countEl.textContent = parseInt(countEl.textContent) + 1;
+      } else {
+        pill = document.createElement('div');
+        pill.className = 'reaction-pill';
+        pill.dataset.emoji = emoji;
+        pill.innerHTML = `${emoji} <span class="count">1</span>`;
+        pill.onclick = () => {
+          let countEl = pill.querySelector('.count');
+          let newVal = parseInt(countEl.textContent) - 1;
+          if (newVal <= 0) pill.remove(); else countEl.textContent = newVal;
+        };
+        reactionsRow.appendChild(pill);
+      }
+    }
+
+    function viralShare(text) {
+      navigator.clipboard?.writeText(text);
+      alert('✨ Link copied! Broadcasted message snippet to clipboard.');
+    }
+
+    function appendMessageContent(text, mediaElement = null) {
+      const list = document.getElementById('message-list');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message-container outgoing';
+
+      const hoverMenu = document.createElement('div');
+      hoverMenu.className = 'message-actions-hover';
+      hoverMenu.innerHTML = `
+        <button class="hover-btn" onclick="triggerReply('${currentDisplayName}', '${text ? text.replace(/'/g, "") : "Attachment"}')" title="Reply">↩️</button>
+        <button class="hover-btn" onclick="viralShare('${text}')" title="Share">🔄</button>
+        <button class="hover-btn" onclick="addReaction(this.closest('.message-container'), '❤️')" title="Love">❤️</button>
+        <button class="hover-btn" onclick="addReaction(this.closest('.message-container'), '🔥')" title="Fire">🔥</button>
+      `;
+      wrapper.appendChild(hoverMenu);
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+
+      const msgAvatar = document.createElement('div');
+      msgAvatar.className = 'avatar-circle';
+      msgAvatar.style.width = '28px'; msgAvatar.style.height = '28px';
+      if (currentAvatarUrl) { msgAvatar.innerHTML = `<img src="${currentAvatarUrl}">`; }
+      else { msgAvatar.textContent = currentDisplayName.charAt(0).toUpperCase(); }
+
+      const contentBox = document.createElement('div');
+      if (replyingToData) {
+        const replyBox = document.createElement('div');
+        replyBox.className = 'reply-context-box';
+        replyBox.innerHTML = `<b>${replyingToData.author}</b>: ${replyingToData.text}`;
+        contentBox.appendChild(replyBox);
+        cancelReply();
+      }
+
+      const author = document.createElement('div');
+      author.style.fontSize = '10px'; author.style.opacity = '0.8'; author.style.marginBottom = '2px';
+      author.textContent = currentDisplayName;
+      contentBox.appendChild(author);
+
+      if (text) {
+        const content = document.createElement('div');
+        content.textContent = text;
+        contentBox.appendChild(content);
+      }
+      if (mediaElement) { contentBox.appendChild(mediaElement); }
+
+      bubble.appendChild(msgAvatar);
+      bubble.appendChild(contentBox);
+      wrapper.appendChild(bubble);
+      list.appendChild(wrapper);
+      list.scrollTop = list.scrollHeight;
     }
 
     function sendMessage() {
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
       if (!text) return;
-
-      const list = document.getElementById('message-list');
-      const bubble = document.createElement('div');
-      bubble.className = 'message-bubble outgoing';
-
-      const author = document.createElement('div');
-      author.style.fontSize = '11px';
-      author.style.opacity = '0.8';
-      author.style.marginBottom = '2px';
-      author.textContent = currentUserName + (activeChatType === 'dm' ? ' (to ' + activeChatName + ')' : '');
-
-      const content = document.createElement('div');
-      content.textContent = text;
-
-      bubble.appendChild(author);
-      bubble.appendChild(content);
-      list.appendChild(bubble);
-
+      appendMessageContent(text);
       input.value = '';
-      list.scrollTop = list.scrollHeight;
+    }
+
+    function handleMediaUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const fileURL = URL.createObjectURL(file);
+      let mediaEl = null;
+
+      if (file.type.startsWith('image/')) {
+        mediaEl = document.createElement('img'); mediaEl.src = fileURL;
+      } else if (file.type.startsWith('video/')) {
+        mediaEl = document.createElement('video'); mediaEl.src = fileURL; mediaEl.controls = true;
+      } else {
+        mediaEl = document.createElement('div');
+        mediaEl.style.fontSize = '11px'; mediaEl.style.textDecoration = 'underline'; mediaEl.style.marginTop = '4px';
+        mediaEl.textContent = `📎 Attachment: ${file.name}`;
+      }
+      appendMessageContent(`Shared a media file`, mediaEl);
+      event.target.value = '';
+    }
+
+    async function toggleVoiceRecording() {
+      const micBtn = document.getElementById('mic-btn');
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+          mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const audioURL = URL.createObjectURL(audioBlob);
+            const audioEl = document.createElement('audio');
+            audioEl.src = audioURL; audioEl.controls = true; audioEl.style.marginTop = '6px'; audioEl.style.width = '200px';
+            appendMessageContent('🎤 Voice Message', audioEl);
+          };
+          mediaRecorder.start();
+          isRecording = true;
+          micBtn.classList.add('recording');
+          document.getElementById('chat-input').placeholder = 'Recording audio... Click mic to stop.';
+        } catch (err) { alert('Microphone access denied or unavailable.'); }
+      } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        document.getElementById('chat-input').placeholder = 'Type message or broadcast to network...';
+      }
     }
 
     document.getElementById('chat-input').addEventListener('keydown', (e) => {
