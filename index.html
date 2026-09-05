@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatME Prototype</title>
+    <title>ChatME Prototype - Synced Profiles</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eceff1; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -505,6 +505,17 @@
     </div>
 
     <script>
+        // Centralized User Profile Synchronizer
+        let currentUser = {
+            name: "Alex Smith, 22",
+            chatId: "84920185",
+            birthday: "October 14, 2004",
+            bio: "Night owl 🦉. Big fan of late-night conversations, indie pop, and trying out new recipes. Say hi!",
+            tags: "Music, Voice Chat",
+            avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+            type: "guest"
+        };
+
         function showAuthForm(formType) {
             document.getElementById('authLanding').style.display = formType === 'landing' ? 'flex' : 'none';
             document.getElementById('loginForm').classList.toggle('active', formType === 'login');
@@ -513,14 +524,17 @@
 
         function loginAsGuest() {
             const randomId = Math.floor(10000000 + Math.random() * 90000000);
-            updateProfileInfo({
+            currentUser = {
                 name: "GuestUser_" + Math.floor(Math.random() * 900 + 100),
                 chatId: randomId,
                 bio: "Just exploring ChatME as a guest visitor!",
                 birthday: "January 1, 2000",
-                tags: "Guest, Newcomer"
-            });
-            completeLogin();
+                tags: "Guest, Newcomer",
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+                type: "guest"
+            };
+            syncUserDataToUI();
+            completeLogin("Signed in as Guest 🕵️‍♂️");
         }
 
         function submitLogin() {
@@ -529,14 +543,17 @@
                 alert("Please enter a valid email or phone number.");
                 return;
             }
-            updateProfileInfo({
-                name: email.split('@')[0] + " (User)",
+            currentUser = {
+                name: email.split('@')[0] + " (Member)",
                 chatId: "59382019",
-                bio: "Registered ChatME user. Glad to be here!",
+                bio: "Registered ChatME member account synced.",
                 birthday: "June 15, 2002",
-                tags: "Member, Verified"
-            });
-            completeLogin();
+                tags: "Member, Verified",
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+                type: "member"
+            };
+            syncUserDataToUI();
+            completeLogin("Logged in successfully to Account!");
         }
 
         function submitRegister() {
@@ -548,48 +565,52 @@
                 alert("Please fill in all fields correctly (Password must be at least 6 characters).");
                 return;
             }
-            updateProfileInfo({
+            currentUser = {
                 name: name,
                 chatId: Math.floor(10000000 + Math.random() * 90000000),
                 bio: "New ChatME account registered successfully!",
                 birthday: "August 20, 2003",
-                tags: "Newcomer, Friend Seeker"
-            });
-            completeLogin();
+                tags: "Newcomer, Friend Seeker",
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+                type: "member"
+            };
+            syncUserDataToUI();
+            completeLogin("Account Registered & Synced!");
         }
 
-        function updateProfileInfo(data) {
-            document.getElementById('displayNickname').innerText = data.name;
-            document.getElementById('displayChatId').innerText = "ChatME ID: " + data.chatId;
-            document.getElementById('displayBio').innerText = data.bio;
-            document.getElementById('displayBirthday').innerText = data.birthday;
+        function syncUserDataToUI() {
+            document.getElementById('displayNickname').innerText = currentUser.name;
+            document.getElementById('displayChatId').innerText = "ChatME ID: " + currentUser.chatId;
+            document.getElementById('displayBio').innerText = currentUser.bio;
+            document.getElementById('displayBirthday').innerText = currentUser.birthday;
+            document.getElementById('displayAvatarImg').style.backgroundImage = `url('${currentUser.avatar}')`;
 
             const tagsContainer = document.getElementById('displayTags');
             tagsContainer.innerHTML = '';
-            data.tags.split(',').forEach(tag => {
+            currentUser.tags.split(',').forEach(tag => {
                 const span = document.createElement('span');
                 span.className = 'tag-pill';
                 span.innerText = tag.trim();
                 tagsContainer.appendChild(span);
             });
 
-            document.getElementById('inputNickname').value = data.name;
-            document.getElementById('inputChatId').value = data.chatId;
-            document.getElementById('inputBio').value = data.bio;
-            document.getElementById('inputBirthday').value = data.birthday;
-            document.getElementById('inputTags').value = data.tags;
+            document.getElementById('inputNickname').value = currentUser.name;
+            document.getElementById('inputChatId').value = currentUser.chatId;
+            document.getElementById('inputBio').value = currentUser.bio;
+            document.getElementById('inputBirthday').value = currentUser.birthday;
+            document.getElementById('inputTags').value = currentUser.tags;
         }
 
-        function completeLogin() {
+        function completeLogin(welcomeMessage) {
             document.getElementById('authScreen').classList.remove('active');
             document.getElementById('mainNavBar').style.display = 'flex';
             switchScreen('discover', document.querySelectorAll('.nav-item')[0]);
             renderDirectoryList();
             
-            // Auto simulate a realtime background notification after 4 seconds to demonstrate feature
+            // Notification Alert to confirm successful real-time session
             setTimeout(() => {
-                simulateRealtimePush("Sophia", "Hey there! Are you free to hop on a voice call right now? 🎙️", "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop");
-            }, 4000);
+                simulateRealtimePush("System Alert", welcomeMessage, "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop");
+            }, 1000);
         }
 
         function logOutUser() {
@@ -609,7 +630,6 @@
             if(element) element.classList.add('active');
 
             if(screenId === 'chats') {
-                // Clear chat badge when entering inbox
                 document.getElementById('navChatBadge').classList.remove('active');
             }
         }
@@ -638,29 +658,24 @@
         };
 
         function simulateRealtimePush(senderName, messageText, avatarUrl) {
-            // Set Banner Data
-            document.getElementById('bannerTitle').innerText = senderName + " sent a message";
+            document.getElementById('bannerTitle').innerText = senderName + " notification";
             document.getElementById('bannerText').innerText = messageText;
             document.getElementById('bannerAvatarImg').style.backgroundImage = `url('${avatarUrl}')`;
             
-            // Show Banner Slide-Down
             const banner = document.getElementById('notificationBanner');
             banner.classList.add('show');
 
-            // Trigger Nav Badge & Inbox Badge Alerts
             document.getElementById('navChatBadge').classList.add('active');
             document.getElementById('navAlertBadge').classList.add('active');
 
             let badgeEl = document.getElementById('badge-' + senderName);
             if(badgeEl) badgeEl.classList.add('active');
 
-            // Auto hide banner after 4.5 seconds
             clearTimeout(notificationTimeout);
             notificationTimeout = setTimeout(() => {
                 banner.classList.remove('show');
             }, 4500);
 
-            // Also dynamically update inbox preview or add new row if needed
             let existingRow = document.getElementById('inbox-row-' + senderName);
             if(existingRow) {
                 document.getElementById('preview-' + senderName).innerText = messageText;
@@ -671,7 +686,6 @@
 
         function clickBanner() {
             document.getElementById('notificationBanner').classList.remove('show');
-            // Jump straight to chats screen
             switchScreen('chats', document.querySelectorAll('.nav-item')[2]);
         }
 
@@ -741,7 +755,6 @@
             document.getElementById('activeChatName').innerText = userName;
             
             const contact = contactData[userName] || { online: true, lastSeen: "Active Now", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop" };
-            
             document.getElementById('roomAvatarImg').style.backgroundImage = `url('${contact.avatar}')`;
             
             const statusDot = document.getElementById('room-status-dot');
@@ -757,7 +770,6 @@
                 statusText.innerText = contact.lastSeen;
             }
 
-            // Remove badge if any
             let badgeEl = document.getElementById('badge-' + userName);
             if(badgeEl) badgeEl.classList.remove('active');
 
@@ -862,7 +874,6 @@
                     if (previewEl) previewEl.innerText = "That's awesome! Glad we connected...";
                     container.scrollTop = container.scrollHeight;
 
-                    // Trigger realtime notification alert for incoming reply
                     simulateRealtimePush(currentChatUser, "That's awesome! Glad we connected 😊", contactData[currentChatUser].avatar);
                 }, 1200);
             }
@@ -919,34 +930,23 @@
         }
 
         function saveProfileChanges() {
-            const nickname = document.getElementById('inputNickname').value;
-            const chatId = document.getElementById('inputChatId').value;
-            const birthday = document.getElementById('inputBirthday').value;
-            const bio = document.getElementById('inputBio').value;
-            const tagsInput = document.getElementById('inputTags').value;
+            currentUser.name = document.getElementById('inputNickname').value;
+            currentUser.chatId = document.getElementById('inputChatId').value;
+            currentUser.birthday = document.getElementById('inputBirthday').value;
+            currentUser.bio = document.getElementById('inputBio').value;
+            currentUser.tags = document.getElementById('inputTags').value;
+
             const avatarFileInput = document.getElementById('inputAvatarFile');
-
-            document.getElementById('displayNickname').innerText = nickname;
-            document.getElementById('displayChatId').innerText = "ChatME ID: " + chatId;
-            document.getElementById('displayBirthday').innerText = birthday;
-            document.getElementById('displayBio').innerText = bio;
-
             if (avatarFileInput.files && avatarFileInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = e => document.getElementById('displayAvatarImg').style.backgroundImage = `url('${e.target.result}')`;
+                reader.onload = e => {
+                    currentUser.avatar = e.target.result;
+                    syncUserDataToUI();
+                };
                 reader.readAsDataURL(avatarFileInput.files[0]);
+            } else {
+                syncUserDataToUI();
             }
-
-            const tagsContainer = document.getElementById('displayTags');
-            tagsContainer.innerHTML = '';
-            tagsInput.split(',').forEach(tag => {
-                if(tag.trim()) {
-                    const span = document.createElement('span');
-                    span.className = 'tag-pill';
-                    span.innerText = tag.trim();
-                    tagsContainer.appendChild(span);
-                }
-            });
 
             toggleEditProfile(false);
         }
@@ -975,10 +975,10 @@
             newPost.className = 'moment-card';
             
             function buildAndInsertPost(mediaTagHtml) {
-                const authorName = document.getElementById('displayNickname').innerText.split(',')[0];
+                const authorName = currentUser.name.split(',')[0];
                 newPost.innerHTML = `
                     <div class="moment-header-row">
-                        <div class="moment-author-avatar" style="background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop');"></div>
+                        <div class="moment-author-avatar" style="background-image: url('${currentUser.avatar}');"></div>
                         <div class="moment-author">${authorName}</div>
                     </div>
                     <div class="moment-text">${text}</div>
@@ -1011,7 +1011,7 @@
                 };
                 reader.readAsDataURL(mediaInput.files[0]);
             } else {
-                buildAndInsertPost('');
+                buildAndInsertsPost('');
             }
         }
 
