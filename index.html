@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatME</title>
+    <title>ChatME(Unified Chat System)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eceff1; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -36,7 +36,6 @@
         .tab-btn { background: none; border: none; font-size: 12px; font-weight: 600; color: #888; cursor: pointer; padding-bottom: 4px; }
         .tab-btn.active { color: #ff4d6d; border-bottom: 2px solid #ff4d6d; }
         
-        /* Feed Content Sub-sections */
         .feed-content { display: none; flex: 1; flex-direction: column; }
         .feed-content.active { display: flex; }
 
@@ -143,7 +142,6 @@
         .save-btn { background: #ff4d6d; color: white; border: none; width: 100%; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 5px; }
         .logout-btn { background: #f1f2f6; color: #ff4d6d; border: 1px solid #ff4d6d; width: 100%; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 8px; }
 
-        /* General UI Elements */
         .notification-item, .follow-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; }
         .badge { background: #ff4d6d; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: auto; }
         
@@ -162,14 +160,12 @@
             <div class="auth-logo">Litmatch</div>
             <div class="auth-tagline">Make new friends through chats, voice & moments</div>
 
-            <!-- Initial Choices: Login, Register, or Guest -->
             <div id="authLanding" class="auth-initial-buttons">
                 <button class="btn-primary-white" onclick="showAuthForm('login')">Log In</button>
                 <button class="btn-outline-white" onclick="showAuthForm('register')">Create Account</button>
-                <button style="background: rgba(0,0,0,0.15); color: white; border: none; padding: 10px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer;" onclick="loginAsGuest()">Continue as Guest 🕵️‍♂️</button>
+                <button style="background: rgba(0,0,0,0.15); color: white; border: none; padding: 12px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer;" onclick="loginAsGuest()">Continue as Guest 🕵️‍♂️</button>
             </div>
 
-            <!-- Login Form Box -->
             <div id="loginForm" class="auth-form-box">
                 <h3 style="font-size: 15px; margin-bottom: 10px; color: #333;">Welcome Back</h3>
                 <div class="auth-input-group">
@@ -185,7 +181,6 @@
                 <span class="auth-switch-link" style="color: #888; font-weight: normal;" onclick="showAuthForm('landing')">← Back</span>
             </div>
 
-            <!-- Register Form Box -->
             <div id="registerForm" class="auth-form-box">
                 <h3 style="font-size: 15px; margin-bottom: 10px; color: #333;">Create Account</h3>
                 <div class="auth-input-group">
@@ -214,7 +209,6 @@
                 <button class="tab-btn" onclick="switchFeed('following', this)">Following</button>
             </div>
 
-            <!-- Latest Feed -->
             <div id="latest" class="feed-content active">
                 <div class="card" id="latestCard" style="background: linear-gradient(135deg, #48cae4, #0077b6);">
                     <h2 id="latName">Marcus, 23</h2>
@@ -222,11 +216,10 @@
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-pass" onclick="nextCard('lat')">❌</button>
-                    <button class="btn btn-like" onclick="nextCard('lat')">💚</button>
+                    <button class="btn btn-like" onclick="likeCardFromDiscover()">💚</button>
                 </div>
             </div>
 
-            <!-- Moments Feed -->
             <div id="moments" class="feed-content" style="overflow-y: auto;">
                 <div class="post-creator">
                     <textarea class="post-input" id="postInput" placeholder="Share what's on your mind..."></textarea>
@@ -246,7 +239,7 @@
                             <button class="moment-action-btn" onclick="likePost(this)">❤️ <span class="like-count">5</span></button>
                             <button class="moment-action-btn" onclick="toggleComments(this)">💬 Comment</button>
                             <button class="moment-action-btn" onclick="sharePost()">↗️ Share</button>
-                            <button class="moment-action-btn" onclick="openChatWith('Sophia')">💬 Chat</button>
+                            <button class="moment-action-btn" onclick="openChatWith('Sophia', 'Hey! Saw your moment post and wanted to say hi.')">💬 Chat</button>
                         </div>
                         <div class="comments-section">
                             <div class="comment-list">
@@ -261,18 +254,16 @@
                 </div>
             </div>
 
-            <!-- Following Feed -->
             <div id="following" class="feed-content" style="overflow-y: auto;">
                 <h4 style="margin-bottom: 10px; color: #444; font-size: 14px;">People You Follow</h4>
-                <div class="follow-item">
-                    <div style="display:flex; align-items:center;">
+                <div class="follow-item" onclick="openChatWith('Chloe', 'Hey Chloe! Checking out your profile.')" style="cursor:pointer;">
+                    <div style="display:flex; align-items:center; width:100%;">
                         <div class="avatar-container"><div class="avatar"></div><div class="status-dot online"></div></div>
                         <div>
                             <h5 style="font-size: 13px;">Chloe</h5>
-                            <p class="status-text-sub online">Online</p>
+                            <p class="status-text-sub online">Online - Tap to chat</p>
                         </div>
                     </div>
-                    <span style="font-size: 12px; color: #888; margin-left:auto;">Following</span>
                 </div>
             </div>
         </div>
@@ -280,10 +271,10 @@
         <!-- NOTIFICATIONS SCREEN -->
         <div id="notifications" class="screen">
             <h3 style="margin-bottom: 15px;">Notifications</h3>
-            <div class="notification-item">
+            <div class="notification-item" onclick="openChatWith('Jessica', 'Hey Jessica! Thanks for the like on my profile.')">
                 <div class="avatar-container"><div class="avatar"></div><div class="status-dot online"></div></div>
                 <div>
-                    <h4 style="font-size: 13px;">Jessica liked your profile!</h4>
+                    <h4 style="font-size: 13px;">Jessica liked your profile! (Tap to chat)</h4>
                     <p style="font-size: 11px; color: #666;">2 minutes ago</p>
                 </div>
                 <span class="badge">New</span>
@@ -292,7 +283,6 @@
 
         <!-- CHAT SCREEN -->
         <div id="chats" class="screen">
-            <!-- Chat Inbox View -->
             <div id="chatInboxView" style="display: flex; flex-direction: column; height: 100%;">
                 <h3 style="margin-bottom: 15px;">Messages</h3>
                 <div id="chatInboxList" style="overflow-y: auto; flex: 1;">
@@ -313,7 +303,6 @@
                 </div>
             </div>
 
-            <!-- Individual Chat Room View -->
             <div id="chatRoomView">
                 <div class="chat-room-header">
                     <div class="header-left">
@@ -381,7 +370,6 @@
 
         <!-- PROFILE SCREEN -->
         <div id="profile" class="screen">
-            <!-- Profile Display View -->
             <div id="profileViewContainer">
                 <div class="profile-top">
                     <button class="edit-profile-btn" onclick="toggleEditProfile(true)">Edit Profile</button>
@@ -417,7 +405,6 @@
                 <button class="logout-btn" onclick="logOutUser()">Log Out / Switch Account</button>
             </div>
 
-            <!-- Profile Edit Form View -->
             <div id="profileEditContainer" style="display: none;">
                 <h3 style="margin-bottom: 12px; font-size: 16px; color: #333;">Edit Profile</h3>
                 <div class="edit-form-group">
@@ -460,7 +447,6 @@
     </div>
 
     <script>
-        /* Auth Flow Handling */
         function showAuthForm(formType) {
             document.getElementById('authLanding').style.display = formType === 'landing' ? 'flex' : 'none';
             document.getElementById('loginForm').classList.toggle('active', formType === 'login');
@@ -529,7 +515,6 @@
                 tagsContainer.appendChild(span);
             });
 
-            // Sync with edit inputs
             document.getElementById('inputNickname').value = data.name;
             document.getElementById('inputChatId').value = data.chatId;
             document.getElementById('inputBio').value = data.bio;
@@ -550,7 +535,6 @@
             showAuthForm('landing');
         }
 
-        /* App Navigation & Functionality */
         function switchScreen(screenId, element) {
             document.querySelectorAll('.screen').forEach(s => {
                 if(s.id !== 'authScreen') s.classList.remove('active');
@@ -574,7 +558,10 @@
         
         const contactData = {
             "Alex": { online: true, lastSeen: "Active Now" },
-            "Sophia": { online: false, lastSeen: "Last seen 12m ago" }
+            "Sophia": { online: false, lastSeen: "Last seen 12m ago" },
+            "Chloe": { online: true, lastSeen: "Active Now" },
+            "Jessica": { online: true, lastSeen: "Active Now" },
+            "Marcus": { online: true, lastSeen: "Active Now" }
         };
 
         function openChatRoom(userName, initialMessage) {
@@ -663,7 +650,7 @@
         }
 
         function sendQuickAction(type) {
-            let messageText = type === 'wave' ? "👋 waved hello!" : (type === 'balloons' ? "🎈 sent celebration balloons!" : "👋 Hi there!");
+            let messageText = type === 'wave' ? "👋 waved hello!" : (type === 'balloons' ? "🎈 sent celebration balloons!" : "💬 Hi there!");
             appendMessage(messageText, 'sent');
         }
 
@@ -680,47 +667,57 @@
             container.scrollTop = container.scrollHeight;
 
             const previewEl = document.getElementById('preview-' + currentChatUser);
-            if (previewEl) previewEl.innerText = (senderType === 'sent' ? "You: " : "") + text;
+            if (previewEl) {
+                previewEl.innerText = (senderType === 'sent' ? "You: " : "") + text;
+            }
 
             if (senderType === 'sent') {
                 setTimeout(() => {
                     const replyBubble = document.createElement('div');
                     replyBubble.className = 'chat-bubble received';
-                    replyBubble.innerText = "That's awesome! Thanks for sharing 😊";
+                    replyBubble.innerText = "That's awesome! Glad we connected 😊";
                     container.appendChild(replyBubble);
-                    if (previewEl) previewEl.innerText = "That's awesome! Thanks for sharing...";
+                    if (previewEl) previewEl.innerText = "That's awesome! Glad we connected...";
                     container.scrollTop = container.scrollHeight;
                 }, 1200);
             }
         }
 
-        function openChatWith(authorName) {
+        function openChatWith(authorName, defaultMsg) {
             if(!contactData[authorName]) contactData[authorName] = { online: true, lastSeen: "Active Now" };
             
             const inboxList = document.getElementById('chatInboxList');
-            if(!document.getElementById('inbox-row-' + authorName)) {
+            let existingRow = document.getElementById('inbox-row-' + authorName);
+            
+            if(!existingRow) {
                 const newRow = document.createElement('div');
                 newRow.className = 'chat-inbox-item';
                 newRow.id = 'inbox-row-' + authorName;
                 newRow.innerHTML = `
-                    <div class="chat-inbox-clickable" onclick="openChatRoom('${authorName}', 'Hey! Saw your moment post and wanted to say hi.')">
+                    <div class="chat-inbox-clickable" onclick="openChatRoom('${authorName}', '${defaultMsg}')">
                         <div class="avatar-container">
                             <div class="avatar"></div>
                             <div class="status-dot online" id="inbox-dot-${authorName}"></div>
                         </div>
                         <div style="flex: 1;">
                             <h4 style="font-size: 13px;">${authorName}</h4>
-                            <p style="font-size: 11px; color: #666;" id="preview-${authorName}">Hey! Saw your moment post and wanted to say hi.</p>
+                            <p style="font-size: 11px; color: #666;" id="preview-${authorName}">${defaultMsg}</p>
                         </div>
                     </div>
                     <span class="status-text-sub online" id="inbox-sub-${authorName}">Online</span>
                     <button class="delete-chat-btn" onclick="deleteChatRow(event, '${authorName}')" title="Delete Chat">🗑️</button>
                 `;
-                inboxList.appendChild(newRow);
+                inboxList.prepend(newRow);
             }
 
-            openChatRoom(authorName, "Hey! Saw your moment post and wanted to say hi.");
+            openChatRoom(authorName, defaultMsg);
             switchScreen('chats', document.querySelectorAll('.nav-item')[2]);
+        }
+
+        function likeCardFromDiscover() {
+            const currentName = document.getElementById('latName').innerText.split(',')[0];
+            alert(`You liked ${currentName}! A chat has been unlocked for you.`);
+            openChatWith(currentName, `Hey! We matched on Discover. Let's chat! 🎉`);
         }
 
         function toggleEditProfile(isEditing) {
@@ -784,15 +781,16 @@
             newPost.className = 'moment-card';
             
             function buildAndInsertPost(mediaTagHtml) {
+                const authorName = document.getElementById('displayNickname').innerText.split(',')[0];
                 newPost.innerHTML = `
-                    <div class="moment-author">${document.getElementById('displayNickname').innerText.split(',')[0]}</div>
+                    <div class="moment-author">${authorName}</div>
                     <div class="moment-text">${text}</div>
                     ${mediaTagHtml}
                     <div class="moment-actions">
                         <button class="moment-action-btn" onclick="likePost(this)">❤️ <span class="like-count">0</span></button>
                         <button class="moment-action-btn" onclick="toggleComments(this)">💬 Comment</button>
                         <button class="moment-action-btn" onclick="sharePost()">↗️ Share</button>
-                        <button class="moment-action-btn" onclick="openChatWith('You')">💬 Chat</button>
+                        <button class="moment-action-btn" onclick="openChatWith('${authorName}', 'Hey! Saw your moment post.')">💬 Chat</button>
                     </div>
                     <div class="comments-section">
                         <div class="comment-list"></div>
