@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatME Prototype - Synced Profiles</title>
+    <title>ChatME - Persistent Guest & Real Accounts</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eceff1; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -18,7 +18,7 @@
         /* Auth / Splash Screen */
         #authScreen { background: linear-gradient(135deg, #ff4d6d, #ff758c); color: white; justify-content: center; align-items: center; text-align: center; }
         .auth-logo { font-size: 32px; font-weight: bold; margin-bottom: 8px; }
-        .auth-tagline { font-size: 13px; opacity: 0.9; margin-bottom: 30px; }
+        .auth-tagline { font-size: 13px; opacity: 0.9; margin-bottom: 25px; }
         .auth-form-box { width: 100%; background: white; padding: 20px; border-radius: 20px; color: #333; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: none; }
         .auth-form-box.active { display: block; }
         .auth-input-group { margin-bottom: 12px; }
@@ -30,6 +30,11 @@
         .auth-initial-buttons { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .btn-primary-white { background: white; color: #ff4d6d; border: none; padding: 12px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .btn-outline-white { background: transparent; color: white; border: 2px solid white; padding: 12px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
+
+        /* Saved Guest Accounts Selector Box */
+        .saved-guests-box { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; width: 100%; margin-top: 15px; text-align: left; max-height: 110px; overflow-y: auto; display: none; }
+        .saved-guests-box.active { display: block; }
+        .guest-chip { display: flex; justify-content: space-between; align-items: center; background: white; color: #333; padding: 6px 10px; border-radius: 8px; margin-bottom: 5px; font-size: 11px; cursor: pointer; }
 
         /* Sub-navigation tabs */
         .feed-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -199,6 +204,10 @@
                 <button class="btn-primary-white" onclick="showAuthForm('login')">Log In</button>
                 <button class="btn-outline-white" onclick="showAuthForm('register')">Create Account</button>
                 <button style="background: rgba(0,0,0,0.15); color: white; border: none; padding: 12px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer;" onclick="loginAsGuest()">Continue as Guest 🕵️‍♂️</button>
+                
+                <button id="toggleGuestsBtn" style="background: transparent; color: white; border: 1px dashed rgba(255,255,255,0.7); padding: 8px; border-radius: 20px; font-size: 11px; cursor: pointer; display: none;" onclick="toggleSavedGuestsBox()">📂 Select Saved Guest Account (<span id="guestCountLabel">0</span>)</button>
+                <div id="savedGuestsBox" class="saved-guests-box">
+                    </div>
             </div>
 
             <div id="loginForm" class="auth-form-box">
@@ -505,7 +514,6 @@
     </div>
 
     <script>
-        // Centralized User Profile Synchronizer
         let currentUser = {
             name: "Alex Smith, 22",
             chatId: "84920185",
@@ -515,6 +523,68 @@
             avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
             type: "guest"
         };
+
+        // Check and Load Saved Guest Accounts from local storage upon booting
+        window.onload = function() {
+            renderSavedGuestsList();
+        };
+
+        function getSavedGuests() {
+            let data = localStorage.getItem('chatme_saved_guests');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveGuestToStorage(guestObj) {
+            let guests = getSavedGuests();
+            // Prevent duplicates based on chatId
+            let existingIdx = guests.findIndex(g => g.chatId === guestObj.chatId);
+            if (existingIdx >= 0) {
+                guests[existingIdx] = guestObj;
+            } else {
+                guests.push(guestObj);
+            }
+            localStorage.setItem('chatme_saved_guests', JSON.stringify(guests));
+            renderSavedGuestsList();
+        }
+
+        function renderSavedGuestsList() {
+            let guests = getSavedGuests();
+            let box = document.getElementById('savedGuestsBox');
+            let btn = document.getElementById('toggleGuestsBtn');
+            let countLbl = document.getElementById('guestCountLabel');
+
+            countLbl.innerText = guests.length;
+            if (guests.length > 0) {
+                btn.style.display = 'block';
+                box.innerHTML = '';
+                guests.forEach(g => {
+                    let chip = document.createElement('div');
+                    chip.className = 'guest-chip';
+                    chip.innerHTML = `
+                        <span>🕵️‍♂️ <b>${g.name}</b> (ID: ${g.chatId})</span>
+                        <button style="background:#ff4d6d; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:9px; cursor:pointer;" onclick="loadGuestAccount('${g.chatId}')">Load</button>
+                    `;
+                    box.appendChild(chip);
+                });
+            } else {
+                btn.style.display = 'none';
+                box.classList.remove('active');
+            }
+        }
+
+        function toggleSavedGuestsBox() {
+            document.getElementById('savedGuestsBox').classList.toggle('active');
+        }
+
+        function loadGuestAccount(chatId) {
+            let guests = getSavedGuests();
+            let found = guests.find(g => g.chatId == chatId);
+            if (found) {
+                currentUser = found;
+                syncUserDataToUI();
+                completeLogin(`Loaded guest account: ${found.name} 🕵️‍♂️`);
+            }
+        }
 
         function showAuthForm(formType) {
             document.getElementById('authLanding').style.display = formType === 'landing' ? 'flex' : 'none';
@@ -533,8 +603,11 @@
                 avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
                 type: "guest"
             };
+            
+            // Save immediately to local storage guest list
+            saveGuestToStorage(currentUser);
             syncUserDataToUI();
-            completeLogin("Signed in as Guest 🕵️‍♂️");
+            completeLogin("Signed in & Saved Guest Account 🕵️‍♂️");
         }
 
         function submitLogin() {
@@ -607,17 +680,21 @@
             switchScreen('discover', document.querySelectorAll('.nav-item')[0]);
             renderDirectoryList();
             
-            // Notification Alert to confirm successful real-time session
             setTimeout(() => {
                 simulateRealtimePush("System Alert", welcomeMessage, "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop");
             }, 1000);
         }
 
         function logOutUser() {
+            // Update storage in case profile was edited while active
+            if (currentUser.type === 'guest') {
+                saveGuestToStorage(currentUser);
+            }
             document.getElementById('mainNavBar').style.display = 'none';
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('authScreen').classList.add('active');
             showAuthForm('landing');
+            renderSavedGuestsList();
         }
 
         function switchScreen(screenId, element) {
@@ -942,10 +1019,12 @@
                 reader.onload = e => {
                     currentUser.avatar = e.target.result;
                     syncUserDataToUI();
+                    if (currentUser.type === 'guest') saveGuestToStorage(currentUser);
                 };
                 reader.readAsDataURL(avatarFileInput.files[0]);
             } else {
                 syncUserDataToUI();
+                if (currentUser.type === 'guest') saveGuestToStorage(currentUser);
             }
 
             toggleEditProfile(false);
@@ -1011,7 +1090,7 @@
                 };
                 reader.readAsDataURL(mediaInput.files[0]);
             } else {
-                buildAndInsertsPost('');
+                buildAndInsertPost('');
             }
         }
 
