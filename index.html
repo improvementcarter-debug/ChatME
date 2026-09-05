@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatME - Persistent Guest & Real Accounts</title>
+    <title>ChatME - Guest Account Direct Finder</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eceff1; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -92,9 +92,16 @@
         .directory-box { background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; display: none; }
         .directory-box.active { display: block; }
         .directory-search { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 8px; font-size: 12px; outline: none; margin-bottom: 8px; }
+        
+        /* New Guest Finder Tab Strip */
+        .dir-tabs { display: flex; gap: 8px; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 6px; }
+        .dir-tab-btn { background: none; border: none; font-size: 11px; font-weight: bold; color: #888; cursor: pointer; padding: 2px 6px; border-radius: 6px; }
+        .dir-tab-btn.active { background: #ffe6eb; color: #ff4d6d; }
+
         .directory-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
         .directory-item:last-child { border-bottom: none; }
         .chat-now-btn { background: #ff4d6d; color: white; border: none; padding: 5px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .guest-load-btn { background: #48cae4; color: white; border: none; padding: 5px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; cursor: pointer; }
 
         .chat-inbox-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; position: relative; }
         .chat-inbox-clickable { display: flex; align-items: center; flex: 1; cursor: pointer; }
@@ -204,10 +211,6 @@
                 <button class="btn-primary-white" onclick="showAuthForm('login')">Log In</button>
                 <button class="btn-outline-white" onclick="showAuthForm('register')">Create Account</button>
                 <button style="background: rgba(0,0,0,0.15); color: white; border: none; padding: 12px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer;" onclick="loginAsGuest()">Continue as Guest 🕵️‍♂️</button>
-                
-                <button id="toggleGuestsBtn" style="background: transparent; color: white; border: 1px dashed rgba(255,255,255,0.7); padding: 8px; border-radius: 20px; font-size: 11px; cursor: pointer; display: none;" onclick="toggleSavedGuestsBox()">📂 Select Saved Guest Account (<span id="guestCountLabel">0</span>)</button>
-                <div id="savedGuestsBox" class="saved-guests-box">
-                    </div>
             </div>
 
             <div id="loginForm" class="auth-form-box">
@@ -344,11 +347,15 @@
                 
                 <div class="chat-header-actions">
                     <h3 style="font-size: 16px;">Messages</h3>
-                    <button class="find-friends-trigger" onclick="toggleDirectoryBox()">🔍 Find Accounts to Chat</button>
+                    <button class="find-friends-trigger" onclick="toggleDirectoryBox()">🔍 Find Accounts & Guests</button>
                 </div>
 
                 <div id="directoryBox" class="directory-box">
-                    <input type="text" id="directorySearchInput" class="directory-search" placeholder="Search by name (e.g. Alex, Sophia)..." oninput="filterDirectory()">
+                    <div class="dir-tabs">
+                        <button class="dir-tab-btn active" id="tabDirRegular" onclick="switchDirTab('regular')">Regular Users</button>
+                        <button class="dir-tab-btn" id="tabDirGuests" onclick="switchDirTab('guests')">📂 Saved Guest Accounts (<span id="guestTabCount">0</span>)</button>
+                    </div>
+                    <input type="text" id="directorySearchInput" class="directory-search" placeholder="Search by name..." oninput="filterDirectory()">
                     <div id="directoryList" style="max-height: 140px; overflow-y: auto;">
                         </div>
                 </div>
@@ -524,9 +531,10 @@
             type: "guest"
         };
 
-        // Check and Load Saved Guest Accounts from local storage upon booting
+        let currentDirTab = 'regular'; // 'regular' or 'guests'
+
         window.onload = function() {
-            renderSavedGuestsList();
+            updateGuestTabBadge();
         };
 
         function getSavedGuests() {
@@ -536,7 +544,6 @@
 
         function saveGuestToStorage(guestObj) {
             let guests = getSavedGuests();
-            // Prevent duplicates based on chatId
             let existingIdx = guests.findIndex(g => g.chatId === guestObj.chatId);
             if (existingIdx >= 0) {
                 guests[existingIdx] = guestObj;
@@ -544,36 +551,20 @@
                 guests.push(guestObj);
             }
             localStorage.setItem('chatme_saved_guests', JSON.stringify(guests));
-            renderSavedGuestsList();
+            updateGuestTabBadge();
         }
 
-        function renderSavedGuestsList() {
+        function updateGuestTabBadge() {
             let guests = getSavedGuests();
-            let box = document.getElementById('savedGuestsBox');
-            let btn = document.getElementById('toggleGuestsBtn');
-            let countLbl = document.getElementById('guestCountLabel');
-
-            countLbl.innerText = guests.length;
-            if (guests.length > 0) {
-                btn.style.display = 'block';
-                box.innerHTML = '';
-                guests.forEach(g => {
-                    let chip = document.createElement('div');
-                    chip.className = 'guest-chip';
-                    chip.innerHTML = `
-                        <span>🕵️‍♂️ <b>${g.name}</b> (ID: ${g.chatId})</span>
-                        <button style="background:#ff4d6d; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:9px; cursor:pointer;" onclick="loadGuestAccount('${g.chatId}')">Load</button>
-                    `;
-                    box.appendChild(chip);
-                });
-            } else {
-                btn.style.display = 'none';
-                box.classList.remove('active');
-            }
+            let countLbl = document.getElementById('guestTabCount');
+            if(countLbl) countLbl.innerText = guests.length;
         }
 
-        function toggleSavedGuestsBox() {
-            document.getElementById('savedGuestsBox').classList.toggle('active');
+        function switchDirTab(tabName) {
+            currentDirTab = tabName;
+            document.getElementById('tabDirRegular').classList.toggle('active', tabName === 'regular');
+            document.getElementById('tabDirGuests').classList.toggle('active', tabName === 'guests');
+            renderDirectoryList(document.getElementById('directorySearchInput').value);
         }
 
         function loadGuestAccount(chatId) {
@@ -582,7 +573,8 @@
             if (found) {
                 currentUser = found;
                 syncUserDataToUI();
-                completeLogin(`Loaded guest account: ${found.name} 🕵️‍♂️`);
+                document.getElementById('directoryBox').classList.remove('active');
+                alert(`Successfully switched active session to guest: ${found.name} 🕵️‍♂️`);
             }
         }
 
@@ -604,7 +596,6 @@
                 type: "guest"
             };
             
-            // Save immediately to local storage guest list
             saveGuestToStorage(currentUser);
             syncUserDataToUI();
             completeLogin("Signed in & Saved Guest Account 🕵️‍♂️");
@@ -679,6 +670,7 @@
             document.getElementById('mainNavBar').style.display = 'flex';
             switchScreen('discover', document.querySelectorAll('.nav-item')[0]);
             renderDirectoryList();
+            updateGuestTabBadge();
             
             setTimeout(() => {
                 simulateRealtimePush("System Alert", welcomeMessage, "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop");
@@ -686,7 +678,6 @@
         }
 
         function logOutUser() {
-            // Update storage in case profile was edited while active
             if (currentUser.type === 'guest') {
                 saveGuestToStorage(currentUser);
             }
@@ -694,7 +685,7 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('authScreen').classList.add('active');
             showAuthForm('landing');
-            renderSavedGuestsList();
+            updateGuestTabBadge();
         }
 
         function switchScreen(screenId, element) {
@@ -785,6 +776,7 @@
             box.classList.toggle('active');
             if (box.classList.contains('active')) {
                 renderDirectoryList();
+                updateGuestTabBadge();
             }
         }
 
@@ -792,29 +784,59 @@
             const listContainer = document.getElementById('directoryList');
             listContainer.innerHTML = "";
             
-            const names = Object.keys(contactData);
-            const filtered = names.filter(name => name.toLowerCase().includes(filterQuery.toLowerCase()));
+            if (currentDirTab === 'regular') {
+                const names = Object.keys(contactData);
+                const filtered = names.filter(name => name.toLowerCase().includes(filterQuery.toLowerCase()));
 
-            if (filtered.length === 0) {
-                listContainer.innerHTML = `<div style="font-size: 11px; color: #888; text-align: center; padding: 6px;">No users found</div>`;
-                return;
-            }
+                if (filtered.length === 0) {
+                    listContainer.innerHTML = `<div style="font-size: 11px; color: #888; text-align: center; padding: 6px;">No users found</div>`;
+                    return;
+                }
 
-            filtered.forEach(name => {
-                const item = document.createElement('div');
-                item.className = 'directory-item';
-                item.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar" style="width: 28px; height: 28px; background-image: url('${contactData[name].avatar}');"></div>
-                        <div>
-                            <div style="font-size: 12px; font-weight: bold; color: #333;">${name}</div>
-                            <div style="font-size: 9px; color: #2ed573;">${contactData[name].lastSeen}</div>
+                filtered.forEach(name => {
+                    const item = document.createElement('div');
+                    item.className = 'directory-item';
+                    item.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="avatar" style="width: 28px; height: 28px; background-image: url('${contactData[name].avatar}');"></div>
+                            <div>
+                                <div style="font-size: 12px; font-weight: bold; color: #333;">${name}</div>
+                                <div style="font-size: 9px; color: #2ed573;">${contactData[name].lastSeen}</div>
+                            </div>
                         </div>
-                    </div>
-                    <button class="chat-now-btn" onclick="openChatFromDirectory('${name}')">Chat</button>
-                `;
-                listContainer.appendChild(item);
-            });
+                        <button class="chat-now-btn" onclick="openChatFromDirectory('${name}')">Chat</button>
+                    `;
+                    listContainer.appendChild(item);
+                });
+            } else {
+                // Guests Tab View
+                let guests = getSavedGuests();
+                const filteredGuests = guests.filter(g => g.name.toLowerCase().includes(filterQuery.toLowerCase()) || g.chatId.toString().includes(filterQuery));
+
+                if (filteredGuests.length === 0) {
+                    listContainer.innerHTML = `<div style="font-size: 11px; color: #888; text-align: center; padding: 6px;">No saved guest accounts found</div>`;
+                    return;
+                }
+
+                filteredGuests.forEach(g => {
+                    const item = document.createElement('div');
+                    item.className = 'directory-item';
+                    item.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="avatar" style="width: 28px; height: 28px; background-image: url('${g.avatar}');"></div>
+                            <div>
+                                <div style="font-size: 12px; font-weight: bold; color: #333;">🕵️‍♂️ ${g.name}</div>
+                                <div style="font-size: 9px; color: #888;">ID: ${g.chatId}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="guest-load-btn" onclick="loadGuestAccount('${g.chatId}')" title="Switch to this Guest Session">Switch</button>
+                            <button class="chat-now-btn" onclick="openChatFromDirectory('${g.name}')">Chat</button>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                });
+            }
         }
 
         function filterDirectory() {
