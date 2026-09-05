@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Litmatch Prototype (Media Posts)</title>
+    <title>ChatME</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eceff1; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -14,7 +14,23 @@
         /* Screens */
         .screen { flex: 1; display: none; flex-direction: column; padding: 20px; overflow-y: auto; background: #fafafa; }
         .screen.active { display: flex; }
+
+        /* Auth / Splash Screen */
+        #authScreen { background: linear-gradient(135deg, #ff4d6d, #ff758c); color: white; justify-content: center; align-items: center; text-align: center; }
+        .auth-logo { font-size: 32px; font-weight: bold; margin-bottom: 8px; }
+        .auth-tagline { font-size: 13px; opacity: 0.9; margin-bottom: 30px; }
+        .auth-form-box { width: 100%; background: white; padding: 20px; border-radius: 20px; color: #333; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: none; }
+        .auth-form-box.active { display: block; }
+        .auth-input-group { margin-bottom: 12px; }
+        .auth-input-group label { font-size: 11px; font-weight: bold; color: #666; display: block; margin-bottom: 3px; }
+        .auth-input { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; font-size: 12px; outline: none; }
+        .auth-main-btn { background: #ff4d6d; color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; margin-top: 5px; }
+        .auth-switch-link { font-size: 11px; color: #ff4d6d; text-align: center; margin-top: 10px; cursor: pointer; display: block; font-weight: 600; }
         
+        .auth-initial-buttons { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .btn-primary-white { background: white; color: #ff4d6d; border: none; padding: 12px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-outline-white { background: transparent; color: white; border: 2px solid white; padding: 12px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
+
         /* Sub-navigation tabs */
         .feed-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .tab-btn { background: none; border: none; font-size: 12px; font-weight: 600; color: #888; cursor: pointer; padding-bottom: 4px; }
@@ -25,7 +41,7 @@
         .feed-content.active { display: flex; }
 
         /* Card Styles */
-        .card { flex: 1; background: linear-gradient(135deg, #ff4d6d, #ff758c); border-radius: 20px; color: white; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3); min-height: 280px; }
+        .card { flex: 1; background: linear-gradient(135deg, #48cae4, #0077b6); border-radius: 20px; color: white; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); min-height: 280px; }
         .card h2 { font-size: 24px; margin-bottom: 5px; }
         .card p { font-size: 13px; opacity: 0.9; }
         
@@ -47,7 +63,6 @@
         .moment-card { background: white; padding: 12px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
         .moment-author { font-weight: bold; font-size: 13px; color: #333; margin-bottom: 4px; }
         .moment-text { font-size: 13px; color: #555; margin-bottom: 8px; }
-        
         .moment-media-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; display: block; }
         
         .moment-actions { display: flex; justify-content: space-between; border-top: 1px solid #f0f0f0; padding-top: 8px; font-size: 12px; color: #666; }
@@ -66,9 +81,8 @@
         .chat-inbox-clickable { display: flex; align-items: center; flex: 1; cursor: pointer; }
         
         .avatar-container { position: relative; margin-right: 12px; flex-shrink: 0; }
-        .avatar { width: 42px; height: 42px; border-radius: 50%; background: #ddd; }
+        .avatar { width: 42px; height: 42px; border-radius: 50%; background: #ddd center/cover; }
         
-        /* Online Status Dots & Text */
         .status-dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid white; position: absolute; bottom: 0; right: 0; }
         .status-dot.online { background: #2ed573; }
         .status-dot.offline { background: #a4b0be; }
@@ -85,7 +99,6 @@
         .header-left { display: flex; align-items: center; gap: 8px; }
         .header-right-actions { display: flex; gap: 10px; }
         .call-icon-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: #ff4d6d; }
-
         .back-chat-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: #ff4d6d; font-weight: bold; }
         
         .chat-messages-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; margin-bottom: 8px; }
@@ -95,7 +108,6 @@
 
         .chat-quick-actions { display: flex; gap: 6px; margin-bottom: 8px; overflow-x: auto; padding-bottom: 4px; }
         .quick-pill { background: #ffe6eb; color: #ff4d6d; border: none; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-        .quick-pill:hover { background: #ffd1dc; }
 
         .chat-input-row { display: flex; gap: 6px; padding-top: 8px; border-top: 1px solid #eee; align-items: center; }
         .chat-text-input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 8px 12px; font-size: 12px; outline: none; }
@@ -129,13 +141,14 @@
         .edit-form-group label { font-size: 11px; color: #666; font-weight: bold; display: block; margin-bottom: 2px; }
         .edit-form-group input, .edit-form-group textarea { width: 100%; border: 1px solid #ddd; border-radius: 6px; padding: 6px; font-size: 12px; outline: none; }
         .save-btn { background: #ff4d6d; color: white; border: none; width: 100%; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 5px; }
+        .logout-btn { background: #f1f2f6; color: #ff4d6d; border: 1px solid #ff4d6d; width: 100%; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 8px; }
 
         /* General UI Elements */
         .notification-item, .follow-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; }
         .badge { background: #ff4d6d; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: auto; }
         
         /* Bottom Navigation Bar */
-        .nav-bar { display: flex; justify-content: space-around; background: #ffffff; padding: 12px 0; border-top: 1px solid #eee; }
+        .nav-bar { display: flex; justify-content: space-around; background: #ffffff; padding: 12px 0; border-top: 1px solid #eee; display: none; }
         .nav-item { background: none; border: none; cursor: pointer; font-size: 12px; color: #888; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 3px; }
         .nav-item.active { color: #ff4d6d; }
     </style>
@@ -144,8 +157,57 @@
 
     <div class="app-container">
         
+        <!-- AUTHENTICATION / SPLASH SCREEN -->
+        <div id="authScreen" class="screen active">
+            <div class="auth-logo">Litmatch</div>
+            <div class="auth-tagline">Make new friends through chats, voice & moments</div>
+
+            <!-- Initial Choices: Login, Register, or Guest -->
+            <div id="authLanding" class="auth-initial-buttons">
+                <button class="btn-primary-white" onclick="showAuthForm('login')">Log In</button>
+                <button class="btn-outline-white" onclick="showAuthForm('register')">Create Account</button>
+                <button style="background: rgba(0,0,0,0.15); color: white; border: none; padding: 10px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer;" onclick="loginAsGuest()">Continue as Guest 🕵️‍♂️</button>
+            </div>
+
+            <!-- Login Form Box -->
+            <div id="loginForm" class="auth-form-box">
+                <h3 style="font-size: 15px; margin-bottom: 10px; color: #333;">Welcome Back</h3>
+                <div class="auth-input-group">
+                    <label>Email or Phone Number</label>
+                    <input type="text" id="loginEmail" class="auth-input" placeholder="e.g. user@email.com">
+                </div>
+                <div class="auth-input-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" class="auth-input" placeholder="••••••••">
+                </div>
+                <button class="auth-main-btn" onclick="submitLogin()">Log In</button>
+                <span class="auth-switch-link" onclick="showAuthForm('register')">Don't have an account? Sign up</span>
+                <span class="auth-switch-link" style="color: #888; font-weight: normal;" onclick="showAuthForm('landing')">← Back</span>
+            </div>
+
+            <!-- Register Form Box -->
+            <div id="registerForm" class="auth-form-box">
+                <h3 style="font-size: 15px; margin-bottom: 10px; color: #333;">Create Account</h3>
+                <div class="auth-input-group">
+                    <label>Full Nickname & Age</label>
+                    <input type="text" id="regName" class="auth-input" placeholder="e.g. Sam, 21">
+                </div>
+                <div class="auth-input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="regEmail" class="auth-input" placeholder="e.g. sam@email.com">
+                </div>
+                <div class="auth-input-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" class="auth-input" placeholder="At least 6 characters">
+                </div>
+                <button class="auth-main-btn" onclick="submitRegister()">Register & Start</button>
+                <span class="auth-switch-link" onclick="showAuthForm('login')">Already have an account? Log in</span>
+                <span class="auth-switch-link" style="color: #888; font-weight: normal;" onclick="showAuthForm('landing')">← Back</span>
+            </div>
+        </div>
+
         <!-- DISCOVER SCREEN -->
-        <div id="discover" class="screen active">
+        <div id="discover" class="screen">
             <div class="feed-tabs">
                 <button class="tab-btn active" onclick="switchFeed('latest', this)">Latest</button>
                 <button class="tab-btn" onclick="switchFeed('moments', this)">Moments</button>
@@ -234,7 +296,6 @@
             <div id="chatInboxView" style="display: flex; flex-direction: column; height: 100%;">
                 <h3 style="margin-bottom: 15px;">Messages</h3>
                 <div id="chatInboxList" style="overflow-y: auto; flex: 1;">
-                    <!-- Alex Inbox Item -->
                     <div class="chat-inbox-item" id="inbox-row-Alex">
                         <div class="chat-inbox-clickable" onclick="openChatRoom('Alex', 'Hey! Nice matching with you.')">
                             <div class="avatar-container">
@@ -248,22 +309,6 @@
                         </div>
                         <span class="status-text-sub online" id="inbox-sub-Alex">Online</span>
                         <button class="delete-chat-btn" onclick="deleteChatRow(event, 'Alex')" title="Delete Chat">🗑️</button>
-                    </div>
-
-                    <!-- Sophia Inbox Item -->
-                    <div class="chat-inbox-item" id="inbox-row-Sophia">
-                        <div class="chat-inbox-clickable" onclick="openChatRoom('Sophia', 'Anyone down for an anonymous voice chat?')">
-                            <div class="avatar-container">
-                                <div class="avatar"></div>
-                                <div class="status-dot offline" id="inbox-dot-Sophia"></div>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="font-size: 13px;">Sophia</h4>
-                                <p style="font-size: 11px; color: #666;" id="preview-Sophia">Anyone down for an anonymous voice chat?</p>
-                            </div>
-                        </div>
-                        <span class="status-text-sub offline" id="inbox-sub-Sophia">Last seen 12m ago</span>
-                        <button class="delete-chat-btn" onclick="deleteChatRow(event, 'Sophia')" title="Delete Chat">🗑️</button>
                     </div>
                 </div>
             </div>
@@ -366,18 +411,17 @@
                     <div id="displayTags" class="section-body">
                         <span class="tag-pill">Music</span>
                         <span class="tag-pill">Voice Chat</span>
-                        <span class="tag-pill">Gaming</span>
-                        <span class="tag-pill">Travel</span>
                     </div>
                 </div>
+
+                <button class="logout-btn" onclick="logOutUser()">Log Out / Switch Account</button>
             </div>
 
             <!-- Profile Edit Form View -->
             <div id="profileEditContainer" style="display: none;">
                 <h3 style="margin-bottom: 12px; font-size: 16px; color: #333;">Edit Profile</h3>
-                
                 <div class="edit-form-group">
-                    <label>Upload New Avatar (Image File)</label>
+                    <label>Upload New Avatar</label>
                     <input type="file" id="inputAvatarFile" accept="image/*" style="font-size: 11px; padding: 4px;">
                 </div>
                 <div class="edit-form-group">
@@ -407,7 +451,7 @@
         </div>
 
         <!-- BOTTOM NAVIGATION -->
-        <nav class="nav-bar">
+        <nav class="nav-bar" id="mainNavBar">
             <button class="nav-item active" onclick="switchScreen('discover', this)">🏠 Discover</button>
             <button class="nav-item" onclick="switchScreen('notifications', this)">🔔 Alerts</button>
             <button class="nav-item" onclick="switchScreen('chats', this)">💬 Chats</button>
@@ -416,8 +460,101 @@
     </div>
 
     <script>
-        function switchScreen(screenId, element) {
+        /* Auth Flow Handling */
+        function showAuthForm(formType) {
+            document.getElementById('authLanding').style.display = formType === 'landing' ? 'flex' : 'none';
+            document.getElementById('loginForm').classList.toggle('active', formType === 'login');
+            document.getElementById('registerForm').classList.toggle('active', formType === 'register');
+        }
+
+        function loginAsGuest() {
+            const randomId = Math.floor(10000000 + Math.random() * 90000000);
+            updateProfileInfo({
+                name: "GuestUser_" + Math.floor(Math.random() * 900 + 100),
+                chatId: randomId,
+                bio: "Just exploring the app as a guest visitor!",
+                birthday: "January 1, 2000",
+                tags: "Guest, Newcomer"
+            });
+            completeLogin();
+        }
+
+        function submitLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) {
+                alert("Please enter a valid email or phone number.");
+                return;
+            }
+            updateProfileInfo({
+                name: email.split('@')[0] + " (User)",
+                chatId: "59382019",
+                bio: "Registered user profile. Glad to be here!",
+                birthday: "June 15, 2002",
+                tags: "Member, Verified"
+            });
+            completeLogin();
+        }
+
+        function submitRegister() {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const pass = document.getElementById('regPassword').value.trim();
+
+            if (!name || !email || pass.length < 6) {
+                alert("Please fill in all fields correctly (Password must be at least 6 characters).");
+                return;
+            }
+            updateProfileInfo({
+                name: name,
+                chatId: Math.floor(10000000 + Math.random() * 90000000),
+                bio: "New account registered successfully!",
+                birthday: "August 20, 2003",
+                tags: "Newcomer, Friend Seeker"
+            });
+            completeLogin();
+        }
+
+        function updateProfileInfo(data) {
+            document.getElementById('displayNickname').innerText = data.name;
+            document.getElementById('displayChatId').innerText = "ChatME ID: " + data.chatId;
+            document.getElementById('displayBio').innerText = data.bio;
+            document.getElementById('displayBirthday').innerText = data.birthday;
+
+            const tagsContainer = document.getElementById('displayTags');
+            tagsContainer.innerHTML = '';
+            data.tags.split(',').forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'tag-pill';
+                span.innerText = tag.trim();
+                tagsContainer.appendChild(span);
+            });
+
+            // Sync with edit inputs
+            document.getElementById('inputNickname').value = data.name;
+            document.getElementById('inputChatId').value = data.chatId;
+            document.getElementById('inputBio').value = data.bio;
+            document.getElementById('inputBirthday').value = data.birthday;
+            document.getElementById('inputTags').value = data.tags;
+        }
+
+        function completeLogin() {
+            document.getElementById('authScreen').classList.remove('active');
+            document.getElementById('mainNavBar').style.display = 'flex';
+            switchScreen('discover', document.querySelectorAll('.nav-item')[0]);
+        }
+
+        function logOutUser() {
+            document.getElementById('mainNavBar').style.display = 'none';
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('authScreen').classList.add('active');
+            showAuthForm('landing');
+        }
+
+        /* App Navigation & Functionality */
+        function switchScreen(screenId, element) {
+            document.querySelectorAll('.screen').forEach(s => {
+                if(s.id !== 'authScreen') s.classList.remove('active');
+            });
             document.getElementById(screenId).classList.add('active');
             
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -446,7 +583,6 @@
             
             const statusDot = document.getElementById('room-status-dot');
             const statusText = document.getElementById('activeChatStatusText');
-            
             const contact = contactData[userName] || { online: true, lastSeen: "Active Now" };
             
             if (contact.online) {
@@ -474,15 +610,12 @@
         function deleteChatRow(event, userName) {
             event.stopPropagation();
             const row = document.getElementById('inbox-row-' + userName);
-            if (row) {
-                row.remove();
-            }
+            if (row) row.remove();
         }
 
         function startVoiceCall() {
             document.getElementById('voiceCallTarget').innerText = currentChatUser;
             document.getElementById('voiceCallOverlay').style.display = 'flex';
-            
             let seconds = 0;
             document.getElementById('voiceCallTimer').innerText = "Ringing...";
             callTimerInterval = setTimeout(() => {
@@ -498,7 +631,6 @@
         function startVideoCall() {
             document.getElementById('videoCallTarget').innerText = currentChatUser;
             document.getElementById('videoCallOverlay').style.display = 'flex';
-            
             let seconds = 0;
             document.getElementById('videoCallTimer').innerText = "Connecting Video...";
             callTimerInterval = setTimeout(() => {
@@ -527,23 +659,12 @@
         }
 
         function handleChatKey(event) {
-            if (event.key === 'Enter') {
-                sendChatMessage();
-            }
+            if (event.key === 'Enter') sendChatMessage();
         }
 
         function sendQuickAction(type) {
-            let messageText = "";
-            if (type === 'wave') {
-                messageText = "👋 waved hello!";
-            } else if (type === 'balloons') {
-                messageText = "🎈 sent celebration balloons!";
-            } else if (type === 'greeting') {
-                messageText = "👋 Hi there! Hope you're having a wonderful day!";
-            }
-            if (messageText) {
-                appendMessage(messageText, 'sent');
-            }
+            let messageText = type === 'wave' ? "👋 waved hello!" : (type === 'balloons' ? "🎈 sent celebration balloons!" : "👋 Hi there!");
+            appendMessage(messageText, 'sent');
         }
 
         function sendVoiceMessage() {
@@ -559,9 +680,7 @@
             container.scrollTop = container.scrollHeight;
 
             const previewEl = document.getElementById('preview-' + currentChatUser);
-            if (previewEl) {
-                previewEl.innerText = (senderType === 'sent' ? "You: " : "") + text;
-            }
+            if (previewEl) previewEl.innerText = (senderType === 'sent' ? "You: " : "") + text;
 
             if (senderType === 'sent') {
                 setTimeout(() => {
@@ -576,9 +695,7 @@
         }
 
         function openChatWith(authorName) {
-            if(!contactData[authorName]) {
-                contactData[authorName] = { online: true, lastSeen: "Active Now" };
-            }
+            if(!contactData[authorName]) contactData[authorName] = { online: true, lastSeen: "Active Now" };
             
             const inboxList = document.getElementById('chatInboxList');
             if(!document.getElementById('inbox-row-' + authorName)) {
@@ -603,18 +720,12 @@
             }
 
             openChatRoom(authorName, "Hey! Saw your moment post and wanted to say hi.");
-            const chatNavBtn = document.querySelectorAll('.nav-item')[2];
-            switchScreen('chats', chatNavBtn);
+            switchScreen('chats', document.querySelectorAll('.nav-item')[2]);
         }
 
         function toggleEditProfile(isEditing) {
-            if (isEditing) {
-                document.getElementById('profileViewContainer').style.display = 'none';
-                document.getElementById('profileEditContainer').style.display = 'block';
-            } else {
-                document.getElementById('profileViewContainer').style.display = 'block';
-                document.getElementById('profileEditContainer').style.display = 'none';
-            }
+            document.getElementById('profileViewContainer').style.display = isEditing ? 'none' : 'block';
+            document.getElementById('profileEditContainer').style.display = isEditing ? 'block' : 'none';
         }
 
         function saveProfileChanges() {
@@ -632,20 +743,17 @@
 
             if (avatarFileInput.files && avatarFileInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('displayAvatarImg').style.backgroundImage = `url('${e.target.result}')`;
-                }
+                reader.onload = e => document.getElementById('displayAvatarImg').style.backgroundImage = `url('${e.target.result}')`;
                 reader.readAsDataURL(avatarFileInput.files[0]);
             }
 
             const tagsContainer = document.getElementById('displayTags');
             tagsContainer.innerHTML = '';
             tagsInput.split(',').forEach(tag => {
-                const cleanTag = tag.trim();
-                if(cleanTag) {
+                if(tag.trim()) {
                     const span = document.createElement('span');
                     span.className = 'tag-pill';
-                    span.innerText = cleanTag;
+                    span.innerText = tag.trim();
                     tagsContainer.appendChild(span);
                 }
             });
@@ -659,7 +767,7 @@
         ];
         let latIndex = 0;
 
-        function nextCard(type) {
+        function nextCard() {
             latIndex = (latIndex + 1) % profiles.length;
             document.getElementById('latName').innerText = profiles[latIndex].name;
             document.getElementById('latBio').innerText = profiles[latIndex].bio;
@@ -675,11 +783,9 @@
             const newPost = document.createElement('div');
             newPost.className = 'moment-card';
             
-            let mediaHTML = '';
-            
             function buildAndInsertPost(mediaTagHtml) {
                 newPost.innerHTML = `
-                    <div class="moment-author">You</div>
+                    <div class="moment-author">${document.getElementById('displayNickname').innerText.split(',')[0]}</div>
                     <div class="moment-text">${text}</div>
                     ${mediaTagHtml}
                     <div class="moment-actions">
@@ -703,15 +809,11 @@
 
             if (mediaInput.files && mediaInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = e => {
                     const fileType = mediaInput.files[0].type;
-                    if (fileType.startsWith('video')) {
-                        mediaHTML = `<video class="moment-media-preview" controls src="${e.target.result}"></video>`;
-                    } else {
-                        mediaHTML = `<img class="moment-media-preview" src="${e.target.result}" alt="Media Post">`;
-                    }
-                    buildAndInsertPost(mediaHTML);
-                }
+                    const mediaHtml = fileType.startsWith('video') ? `<video class="moment-media-preview" controls src="${e.target.result}"></video>` : `<img class="moment-media-preview" src="${e.target.result}" alt="Media Post">`;
+                    buildAndInsertPost(mediaHtml);
+                };
                 reader.readAsDataURL(mediaInput.files[0]);
             } else {
                 buildAndInsertPost('');
@@ -731,9 +833,7 @@
         }
 
         function toggleComments(btn) {
-            const momentCard = btn.closest('.moment-card');
-            const commentsSec = momentCard.querySelector('.comments-section');
-            commentsSec.classList.toggle('open');
+            btn.closest('.moment-card').querySelector('.comments-section').classList.toggle('open');
         }
 
         function addComment(btn) {
@@ -746,7 +846,6 @@
             const newComment = document.createElement('div');
             newComment.className = 'comment-item';
             newComment.innerHTML = `<b>You:</b> ${commentText}`;
-            
             commentList.appendChild(newComment);
             input.value = '';
         }
